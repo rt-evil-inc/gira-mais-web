@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  app:
+    container_name: gira-web
+    image: ghcr.io/rt-evil-inc/gira-web:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/gira
+      - NODE_ENV=production
+      - ADMIN_LOGIN=admin:password # Change this to your desired admin login
+      - INITIAL_DATE=2025-04-27 # Change this to your desired initial date
+    depends_on:
+      - db
+    networks:
+      - gira-network
+    restart: unless-stopped
+
+  db:
+    container_name: gira-web-db
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gira
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - gira-network
+    restart: unless-stopped
+
+networks:
+  gira-network:
+    driver: bridge
+
+volumes:
+  postgres-data:

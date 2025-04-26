@@ -1,0 +1,14 @@
+Dockerfile
+.dockerignore
+.git
+.gitignore
+.gitattributes
+README.md
+eslint.config.js
+.graphqlrc
+.editorconfig
+.vscode
+.github
+node_modules
+build
+package
