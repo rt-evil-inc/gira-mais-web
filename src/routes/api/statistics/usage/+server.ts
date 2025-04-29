@@ -6,18 +6,18 @@ import type { RequestHandler } from './$types';
 import { env } from '$env/dynamic/private';
 
 export const POST: RequestHandler = async ({ request }) => {
+	// Parse request body
+	const body = await request.json();
+
+	// Validate required fields
+	if (!body.deviceId) {
+		throw error(400, { message: 'deviceId is required' });
+	}
+	if (!request.headers.get('user-agent')?.startsWith('Gira+')) {
+		throw error(400, { message: 'invalid user-agent' });
+	}
+
 	try {
-		// Parse request body
-		const body = await request.json();
-
-		// Validate required fields
-		if (!body.deviceId) {
-			throw error(400, { message: 'deviceId is required' });
-		}
-		if (!request.headers.get('user-agent')?.startsWith('Gira+')) {
-			throw error(400, { message: 'invalid user-agent' });
-		}
-
 		// Store statistics event in database
 		await db.insert(usage).values({
 			deviceId: body.deviceId,
@@ -33,11 +33,6 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 	} catch (err) {
 		console.error('Error handling statistics request:', err);
-
-		if (err instanceof Error) {
-			throw error(500, { message: err.message });
-		}
-
 		throw error(500, { message: 'An unknown error occurred' });
 	}
 };
