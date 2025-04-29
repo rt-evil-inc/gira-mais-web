@@ -1,11 +1,5 @@
-import { initializeConfig } from '$lib/server/db';
 import { env } from '$env/dynamic/private';
 import type { Handle } from '@sveltejs/kit';
-
-// Initialize the config table when the server starts
-initializeConfig().catch(error => {
-	console.error('Failed to initialize config table:', error);
-});
 
 // Check if admin credentials are set
 if (!env.ADMIN_LOGIN) {
