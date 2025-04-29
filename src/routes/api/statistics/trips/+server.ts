@@ -18,12 +18,34 @@ export const POST: RequestHandler = async ({ request }) => {
 			throw error(400, { message: 'invalid user-agent' });
 		}
 
-		// Store statistics event in database
-		await db.insert(trips).values({
-			deviceId: body.deviceId,
-			bikeSerial: body.bikeSerial,
-			stationSerial: body.stationSerial,
-		});
+		// Check for recent trips in the last 5 minutes
+		const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+		const recentTrips = await db
+			.select()
+			.from(trips)
+			.where(
+				sql`${trips.deviceId} = ${body.deviceId} AND ${trips.timestamp} > ${fiveMinutesAgo}`,
+			)
+			.orderBy(sql`${trips.timestamp} DESC`)
+			.limit(1);
+
+		if (recentTrips.length > 0) {
+			// Update the timestamp of the most recent trip
+			const mostRecentTrip = recentTrips[0];
+			await db.update(trips)
+				.set({ timestamp: new Date })
+				.where(
+					sql`${trips.deviceId} = ${mostRecentTrip.deviceId} AND 
+						${trips.timestamp} = ${mostRecentTrip.timestamp.toISOString()}`,
+				);
+		} else {
+			// Store new statistics event in database
+			await db.insert(trips).values({
+				deviceId: body.deviceId,
+				bikeSerial: body.bikeSerial,
+				stationSerial: body.stationSerial,
+			});
+		}
 
 		// Return success response with message
 		return json({
