@@ -13,6 +13,10 @@
 	let groupBy = $state('hour');
 </script>
 
+<svelte:head>
+	<title>Gira+ | Estatísticas</title>
+</svelte:head>
+
 <div class="absolute right-0 top-0 m-4 flex items-center gap-2">
 	<LightSwitch />
 </div>

@@ -18,6 +18,10 @@
 	];
 </script>
 
+<svelte:head>
+	<title>Gira+</title>
+</svelte:head>
+
 <div class="min-h-screen bg-background dark text-foreground">
 	<!-- Hero Section -->
 	<section class="py-20 text-center">

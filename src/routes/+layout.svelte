@@ -5,6 +5,10 @@
 	let { children } = $props();
 </script>
 
+<svelte:head>
+	<title>Gira+</title>
+</svelte:head>
+
 <ModeWatcher />
 <Toaster />
 
