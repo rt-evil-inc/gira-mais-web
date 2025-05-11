@@ -4,6 +4,7 @@
 	import { ChartLine } from 'lucide-svelte';
 	import { getLocalTimeZone, today } from '@internationalized/date';
 	import LightSwitch from '$lib/components/LightSwitch.svelte';
+	import Footer from '$lib/components/Footer.svelte';
 
 	let interval = $state({
 		start: today(getLocalTimeZone()).add({ days: -7 }),
@@ -16,7 +17,7 @@
 	<LightSwitch />
 </div>
 
-<div class="container mx-auto py-12 px-4 max-w-6xl">
+<div class="container min-h-screen mx-auto py-12 px-4 max-w-6xl">
 	<header class="mb-10">
 		<div class="flex items-center mb-4">
 			<ChartLine class="min-h-10 min-w-10 text-primary" />
@@ -43,3 +44,5 @@
 		/>
 	</div>
 </div>
+
+<Footer class="bg-muted/40" />

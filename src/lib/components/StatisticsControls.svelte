@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getLocalTimeZone, today, parseDate, type CalendarDate } from '@internationalized/date';
+	import { getLocalTimeZone, today, parseDate } from '@internationalized/date';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import * as Popover from '$lib/components/ui/popover';
 	import { Button } from '$lib/components/ui/button';
@@ -35,7 +35,7 @@
 			<Popover.PopoverTrigger>
 				<Button variant="outline" size="sm" class="ml-auto">
 					<CalendarIcon class="mr-2 h-4 w-4" />
-					<span class="w-40">{interval.start?.toString()} - {interval.end?.toString()}</span>
+					<span class="w-46">{interval.start?.toString()} - {interval.end?.toString()}</span>
 				</Button>
 			</Popover.PopoverTrigger>
 			<Popover.PopoverContent class="w-auto p-0" align="start">
