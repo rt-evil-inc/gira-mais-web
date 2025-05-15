@@ -26,7 +26,7 @@
 	<!-- Hero Section -->
 	<section class="py-20 text-center">
 		<div class="absolute top-4 right-4 hidden md:flex gap-2">
-			<Button variant="ghost" size="sm" href="https://github.com/rt-evil-inc/gira" target="_blank">GitHub</Button>
+			<Button variant="ghost" size="sm" href="https://github.com/rt-evil-inc/gira-mais" target="_blank">GitHub</Button>
 			<Button variant="ghost" size="sm" href="/estatisticas">Estatísticas</Button>
 			<!-- <Button variant="ghost" size="sm" href="/blog">Blog</Button> -->
 		</div>
@@ -53,7 +53,7 @@
 				</div>
 			</div>
 			<div class="text-sm text-muted-foreground mt-6 opacity-50 hover:opacity-100 transition-opacity">
-				ou <a href="https://github.com/rt-evil-inc/gira/releases" target="_blank" class="underline">descarregar o APK no GitHub</a>
+				ou <a href="https://github.com/rt-evil-inc/gira-mais/releases" target="_blank" class="underline">descarregar o APK no GitHub</a>
 			</div>
 		</div>
 	</section>
@@ -207,7 +207,7 @@
 						<AccordionTrigger>Isto é seguro?</AccordionTrigger>
 						<AccordionContent>
 							<p class="text-muted-foreground">
-								Sim. A aplicação comunica diretamente com o API da Gira, tal como a aplicação oficial, sem passar por servidores intermediários. Para além disso, a aplicação não recolhe dados pessoais além das <a href="/estatisticas">estatísticas anónimas de utilização opcionais</a>. Isto pode ser verificado no código fonte da aplicação, disponível no <a href="https://github.com/rt-evil-inc/gira" target="_blank">GitHub</a>.
+								Sim. A aplicação comunica diretamente com o API da Gira, tal como a aplicação oficial, sem passar por servidores intermediários. Para além disso, a aplicação não recolhe dados pessoais além das <a href="/estatisticas">estatísticas anónimas de utilização opcionais</a>. Isto pode ser verificado no código fonte da aplicação, disponível no <a href="https://github.com/rt-evil-inc/gira-mais" target="_blank">GitHub</a>.
 							</p>
 						</AccordionContent>
 					</AccordionItem>
@@ -228,7 +228,7 @@
 							<ul class="list-disc pl-6 space-y-2 text-muted-foreground">
 								<li>
 									<strong>Deixar uma estrela:</strong>
-									<p class="mt-1">Deixe-nos uma estrela no <a href="https://github.com/rt-evil-inc/gira" target="_blank">GitHub</a>! 🤩</p>
+									<p class="mt-1">Deixe-nos uma estrela no <a href="https://github.com/rt-evil-inc/gira-mais" target="_blank">GitHub</a>! 🤩</p>
 								</li>
 								<li>
 									<strong>Divulgar a aplicação:</strong>
@@ -237,12 +237,12 @@
 								<li>
 									<strong>Reportar problemas ou sugerir melhorias:</strong>
 									<p class="mt-1">Estamos abertos a sugestões e feedback. Se encontrar um problema ou tiver uma ideia para melhorar a aplicação, não hesite em
-										<a href="https://github.com/rt-evil-inc/gira/issues" target="_blank">abrir um <em>issue</em></a> no nosso repositório no GitHub.</p>
+										<a href="https://github.com/rt-evil-inc/gira-mais/issues" target="_blank">abrir um <em>issue</em></a> no nosso repositório no GitHub.</p>
 								</li>
 								<li>
 									<strong>Contribuir com código através do GitHub:</strong>
 									<p class="mt-1">Se tem conhecimentos de programação e quer ajudar a desenvolver a aplicação, pode fazê-lo através do nosso
-										<a href="https://github.com/rt-evil-inc/gira" target="_blank">repositório no GitHub</a>.</p>
+										<a href="https://github.com/rt-evil-inc/gira-mais" target="_blank">repositório no GitHub</a>.</p>
 								</li>
 								<li>
 									<strong>Doações:</strong>

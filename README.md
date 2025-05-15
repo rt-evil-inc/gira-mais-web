@@ -6,7 +6,7 @@ Para executar a aplicação utilizando Docker Compose:
 
 1. Descarregar o ficheiro `docker-compose.yml`:
    ```bash
-    curl -O https://raw.githubusercontent.com/rt-evil-inc/gira-web/main/docker-compose.yml
+    curl -O https://raw.githubusercontent.com/rt-evil-inc/gira-mais-web/main/docker-compose.yml
    ```
 
 2. Configurar as variáveis de ambiente no ficheiro `docker-compose.yml`:
@@ -30,7 +30,7 @@ Para executar a aplicação em modo de desenvolvimento:
 
 1. Clonar este repositório:
    ```bash
-   git clone https://github.com/rt-evil-inc/gira-web.git
+   git clone https://github.com/rt-evil-inc/gira-mais-web.git
    cd gira-web
    ```
 

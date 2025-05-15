@@ -24,8 +24,8 @@
 						<li><a href="/estatisticas">Estatísticas</a></li>
 						<!-- <li><a href="/blog">Blog</a></li> -->
 						<li><a href="https://github.com/orgs/rt-evil-inc/projects/1/views/7" target="_blank">Roadmap</a></li>
-						<li><a href="https://github.com/rt-evil-inc/gira/releases" target="_blank">Release Notes</a></li>
-						<li><a href="https://github.com/rt-evil-inc/gira/issues" target="_blank">Feedback</a></li>
+						<li><a href="https://github.com/rt-evil-inc/gira-mais/releases" target="_blank">Release Notes</a></li>
+						<li><a href="https://github.com/rt-evil-inc/gira-mais/issues" target="_blank">Feedback</a></li>
 					</ul>
 				</div>
 				<div class="grow">

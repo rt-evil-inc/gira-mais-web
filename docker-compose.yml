@@ -3,7 +3,7 @@ version: '3'
 services:
   app:
     container_name: gira-web
-    image: ghcr.io/rt-evil-inc/gira-web:latest
+    image: ghcr.io/rt-evil-inc/gira-mais-web:latest
     ports:
       - "3000:3000"
     environment:
