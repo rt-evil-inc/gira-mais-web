@@ -27,6 +27,10 @@ WORKDIR /app
 COPY --from=build /app/build ./build
 COPY --from=build /app/package.json ./
 
+# Copy the database configuration so that we interact with it in the production environment
+COPY --from=build /app/drizzle.config.ts ./
+COPY --from=build /app/src/lib/server/db ./src/lib/server/db
+
 # Install only production dependencies
 COPY --from=build /app/node_modules ./node_modules
 
