@@ -10,7 +10,7 @@
 
 	Chart.register(TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
-	let { endpoint, interval, groupBy, title, description } = $props();
+	let { endpoint, interval, groupBy, title, description, colorProperty = '--primary' } = $props();
 
 	let isSmallInterval = $derived(interval?.start?.add({ days: 1 }) >= interval?.end);
 	let isLargeInterval = $derived(interval?.start?.add({ weeks: 2 }) < interval?.end);
@@ -75,8 +75,8 @@
 		const datasets: ChartDataset<'line', { x: Date; y: number }[]>[] = [{
 			label: title,
 			data: data,
-			backgroundColor: `hsl(${style.getPropertyValue('--primary')} / 0.3)`,
-			borderColor: `hsl(${style.getPropertyValue('--primary')})`,
+			backgroundColor: `hsl(${style.getPropertyValue(colorProperty)} / 0.3)`,
+			borderColor: `hsl(${style.getPropertyValue(colorProperty)})`,
 			borderWidth: 2,
 			tension: 0.4,
 			fill: true,

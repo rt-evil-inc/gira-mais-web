@@ -22,7 +22,7 @@ export const PUT: RequestHandler = async ({ request }) => {
 			success: true,
 		});
 	} catch (err) {
-		console.error('Error updating statistics message:', err);
+		console.error('Error updating message:', err);
 
 		if (err instanceof Error) {
 			throw error(500, { message: err.message });

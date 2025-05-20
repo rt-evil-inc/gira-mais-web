@@ -13,7 +13,7 @@ export const GET: RequestHandler = async () => {
 			showAlways: currentConfig?.messageShowAlways === 'true',
 		});
 	} catch (err) {
-		console.error('Error retrieving statistics message:', err);
+		console.error('Error retrieving message:', err);
 		throw error(500, { message: 'An unknown error occurred' });
 	}
 };

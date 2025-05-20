@@ -6,9 +6,17 @@
 	import { Settings } from 'lucide-svelte';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
+	import StatisticsControls from '$lib/components/StatisticsControls.svelte';
+	import StatisticsChart from '$lib/components/AreaChart.svelte';
+	import { getLocalTimeZone, today } from '@internationalized/date';
 
 	let message = $state('');
 	let showAlways = $state(false);
+	let interval = $state({
+		start: today(getLocalTimeZone()).add({ days: -7 }),
+		end: today(getLocalTimeZone()),
+	});
+	let groupBy = $state('hour');
 
 	async function updateMessage() {
 		try {
@@ -43,6 +51,10 @@
 			});
 	});
 </script>
+
+<svelte:head>
+	<title>Gira+ | Admin</title>
+</svelte:head>
 
 <div class="container mx-auto py-12 px-4 max-w-6xl">
 	<header class="mb-10">
@@ -109,5 +121,18 @@
 				{/if}
 			</CardContent>
 		</Card>
+	</div>
+
+	<!-- Chart Controls -->
+	<div class="mt-8 mb-4">
+		<StatisticsControls bind:interval bind:groupBy />
+	</div>
+
+	<!-- Statistics Charts -->
+	<div class="mt-4">
+		<StatisticsChart endpoint="admin/errors" colorProperty="--warning" {interval} {groupBy}
+			title="Erros"
+			description="Número de erros ao longo do tempo"
+		/>
 	</div>
 </div>

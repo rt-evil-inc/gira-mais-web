@@ -17,6 +17,14 @@ export const trips = pgTable('trips', {
 	stationSerial: varchar('station_serial', { length: 32 }),
 });
 
+export const errors = pgTable('errors', {
+	id: serial('id').primaryKey(),
+	deviceId: varchar('device_id', { length: 64 }).notNull(),
+	timestamp: timestamp('timestamp').defaultNow().notNull(),
+	errorCode: varchar('error_code', { length: 64 }).notNull(),
+	errorMessage: text('error_message'),
+});
+
 export const config = pgTable('config', {
 	id: serial('id').primaryKey(),
 	message: text('message').notNull().default(''),
