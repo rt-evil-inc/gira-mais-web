@@ -54,6 +54,7 @@
   "dependencies": {
     "chart.js": "^4.4.9",
     "chartjs-adapter-date-fns": "^3.0.0",
+    "chartjs-plugin-annotation": "^3.1.0",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.38.4",
     "embla-carousel-autoplay": "^8.6.0",
