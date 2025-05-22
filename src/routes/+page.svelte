@@ -11,10 +11,16 @@
 	import Footer from '$lib/components/Footer.svelte';
 
 	const screenshots = [
-		'/screenshot-1.png',
-		'/screenshot-2.png',
-		'/screenshot-3.png',
-		'/screenshot-4.png',
+		'/screenshots/screenshot-1.png',
+		'/screenshots/screenshot-2.png',
+		'/screenshots/screenshot-3.png',
+		'/screenshots/screenshot-4.png',
+		'/screenshots/screenshot-5.png',
+		'/screenshots/screenshot-6.png',
+		'/screenshots/screenshot-7.png',
+		'/screenshots/screenshot-8.png',
+		'/screenshots/screenshot-9.png',
+		'/screenshots/screenshot-10.png',
 	];
 </script>
 
@@ -65,7 +71,7 @@
 				<div class="relative w-screen -ml-8 sm:ml-0 sm:w-full lg:col-span-2 sm:m-0 select-none">
 					<div class="hidden sm:block absolute inset-y-0 left-0 w-16 z-10 pointer-events-none bg-gradient-to-r from-[#151515] to-transparent"></div>
 					<div class="hidden sm:block absolute inset-y-0 right-0 w-16 z-10 pointer-events-none bg-gradient-to-l from-[#151515] to-transparent"></div>
-					<Carousel.Root plugins={[Autoplay()]} opts={{ loop: true }}>
+					<Carousel.Root plugins={[Autoplay({ stopOnInteraction: false })]} opts={{ loop: true }}>
 						<Carousel.Content>
 							{#each screenshots as screenshot}
 								<Carousel.Item class="flex justify-center">
