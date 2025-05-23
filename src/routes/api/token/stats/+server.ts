@@ -18,7 +18,7 @@ export const GET: RequestHandler = async () => {
 			count: sql<number>`count(*)`,
 		}).from(integrityTokens);
 
-		const totalTokens = totalTokensResult[0]?.count || 0;
+		const totalTokens = Number(totalTokensResult[0]?.count || 0);
 
 		// Expired unassigned tokens
 		const expiredUnassignedResult = await db.select({
@@ -29,7 +29,7 @@ export const GET: RequestHandler = async () => {
 				lt(integrityTokens.expiresAt, now),
 			));
 
-		const expiredUnassigned = expiredUnassignedResult[0]?.count || 0;
+		const expiredUnassigned = Number(expiredUnassignedResult[0]?.count || 0);
 
 		// Valid tokens
 		const validTokensResult = await db.select({
@@ -37,7 +37,7 @@ export const GET: RequestHandler = async () => {
 		}).from(integrityTokens)
 			.where(gt(integrityTokens.expiresAt, now));
 
-		const validTokens = validTokensResult[0]?.count || 0;
+		const validTokens = Number(validTokensResult[0]?.count || 0);
 
 		// Available tokens
 		const availableTokensResult = await db.select({
@@ -48,7 +48,7 @@ export const GET: RequestHandler = async () => {
 				gt(integrityTokens.expiresAt, now),
 			));
 
-		const availableTokens = availableTokensResult[0]?.count || 0;
+		const availableTokens = Number(availableTokensResult[0]?.count || 0);
 
 		// Available tokens after 10 minutes
 		const availableTokensAfter10MinsResult = await db.select({
@@ -59,7 +59,7 @@ export const GET: RequestHandler = async () => {
 				gt(integrityTokens.expiresAt, tenMinutesFromNow),
 			));
 
-		const availableTokensAfter10Mins = availableTokensAfter10MinsResult[0]?.count || 0;
+		const availableTokensAfter10Mins = Number(availableTokensAfter10MinsResult[0]?.count || 0);
 
 		// Assigned tokens
 		const assignedTokensResult = await db.select({
@@ -70,7 +70,7 @@ export const GET: RequestHandler = async () => {
 				gt(integrityTokens.expiresAt, now),
 			));
 
-		const assignedTokens = assignedTokensResult[0]?.count || 0;
+		const assignedTokens = Number(assignedTokensResult[0]?.count || 0);
 
 		// Return stats
 		return json({
