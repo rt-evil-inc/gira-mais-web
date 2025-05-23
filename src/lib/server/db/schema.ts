@@ -31,3 +31,14 @@ export const config = pgTable('config', {
 	messageTimestamp: timestamp('messageTimestamp').defaultNow().notNull(),
 	messageShowAlways: text('messageShowAlways').notNull().default('false'),
 });
+
+export const integrityTokens = pgTable('integrity_tokens', {
+	id: serial('id').primaryKey(),
+	token: varchar('token', { length: 2048 }).notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	tokenSource: varchar('token_source', { length: 64 }),
+	expiresAt: timestamp('expires_at').notNull(),
+	assignedTo: varchar('assigned_to', { length: 128 }).default(''),
+	assignedAt: timestamp('assigned_at'),
+	userAgent: varchar('user_agent', { length: 512 }),
+});
