@@ -129,7 +129,7 @@
 
 	<!-- Token Monitoring Section -->
 	<div class="mt-12">
-		<TokenMonitor tokenSources={data.tokenSources} tokenStats={data.tokenStats}/>
+		<TokenMonitor tokenSources={data.tokenSources} tokenStats={data.tokenStats} {interval} {groupBy}/>
 	</div>
 
 	<!-- Chart Controls -->

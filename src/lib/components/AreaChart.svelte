@@ -11,7 +11,7 @@
 
 	Chart.register(TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, annotationPlugin);
 
-	let { endpoint, interval, groupBy, title, description, colorProperty = '--primary' } = $props();
+	let { endpoint, interval, groupBy, title, description, colorProperty = '--primary', tension = 0.4 } = $props();
 
 	let isSmallInterval = $derived(interval?.start?.add({ days: 1 }) >= interval?.end);
 	// let isLargeInterval = $derived(interval?.start?.add({ weeks: 2 }) < interval?.end);
@@ -93,7 +93,7 @@
 			backgroundColor: `hsl(${style.getPropertyValue(colorProperty)} / 0.3)`,
 			borderColor: `hsl(${style.getPropertyValue(colorProperty)})`,
 			borderWidth: 2,
-			tension: 0.4,
+			tension: tension,
 			fill: true,
 			pointRadius: 0,
 		}];

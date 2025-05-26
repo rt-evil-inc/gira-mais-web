@@ -7,6 +7,8 @@
 	import { formatDistanceToNow } from 'date-fns';
 	import { pt } from 'date-fns/locale';
 	import { invalidate } from '$app/navigation';
+	import StatisticsChart from '$lib/components/AreaChart.svelte';
+	import type { CalendarDate } from '@internationalized/date';
 
 	interface TokenSource {
 		id: string;
@@ -30,7 +32,17 @@
 		available_tokens_after_10_mins: number;
 	}
 
-	let { tokenSources, tokenStats }: { tokenSources: TokenSource[]; tokenStats: TokenStats } = $props();
+	let {
+		tokenSources,
+		tokenStats,
+		interval,
+		groupBy,
+	}: {
+		tokenSources: TokenSource[];
+		tokenStats: TokenStats;
+		interval: { start: CalendarDate; end: CalendarDate };
+		groupBy: string;
+	} = $props();
 	let openTokenSources = $state<string[]>([]);
 	let selectedTokens = $state<{ [tokenSource: string]: TokenRequest[] }>({});
 	let searchTerm = $state('');
@@ -172,6 +184,14 @@
 				<div class="text-2xl font-bold text-foreground">{tokenStats.total_tokens}</div>
 				<div class="text-xs text-muted-foreground">Total de Tokens</div>
 			</div>
+		</div>
+
+		<!-- Chart Section -->
+		<div class="mb-6">
+			<StatisticsChart endpoint="admin/tokens" colorProperty="--primary" {interval} {groupBy} tension={0.1}
+				title="Tokens Disponíveis"
+				description="Número de tokens disponíveis ao longo do tempo"
+			/>
 		</div>
 
 		<!-- Token Source List -->
