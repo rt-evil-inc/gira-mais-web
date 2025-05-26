@@ -129,7 +129,7 @@
 
 	<!-- Token Monitoring Section -->
 	<div class="mt-12">
-		<TokenMonitor tokenSources={data.tokenSources}/>
+		<TokenMonitor tokenSources={data.tokenSources} tokenStats={data.tokenStats}/>
 	</div>
 
 	<!-- Chart Controls -->

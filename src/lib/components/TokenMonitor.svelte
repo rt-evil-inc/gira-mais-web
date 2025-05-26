@@ -6,7 +6,7 @@
 	import { ChevronDown, ChevronRight, Search, RefreshCw, Clock, Smartphone } from 'lucide-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import { pt } from 'date-fns/locale';
-	import { invalidate, invalidateAll } from '$app/navigation';
+	import { invalidate } from '$app/navigation';
 
 	interface TokenSource {
 		id: string;
@@ -21,7 +21,16 @@
 		token: string;
 	}
 
-	let { tokenSources }: { tokenSources: TokenSource[] } = $props();
+	interface TokenStats {
+		total_tokens: number;
+		assigned_tokens: number;
+		available_tokens: number;
+		valid_tokens: number;
+		expired_unassigned: number;
+		available_tokens_after_10_mins: number;
+	}
+
+	let { tokenSources, tokenStats }: { tokenSources: TokenSource[]; tokenStats: TokenStats } = $props();
 	let openTokenSources = $state<string[]>([]);
 	let selectedTokens = $state<{ [tokenSource: string]: TokenRequest[] }>({});
 	let searchTerm = $state('');
@@ -35,7 +44,10 @@
 	});
 
 	async function loadTokenSources() {
-		await invalidate('/api/admin/tokens');
+		await Promise.all([
+			invalidate('/api/admin/tokens'),
+			invalidate('/api/token/stats'),
+		]);
 	}
 
 	async function loadTokenSource(tokenSourceId: string) {
@@ -139,6 +151,26 @@
 			<Badge variant="outline">
 				{filteredTokenSources.length} telefones
 			</Badge>
+		</div>
+
+		<!-- Token Statistics Overview -->
+		<div class="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+			<div class="bg-card border rounded-lg p-3">
+				<div class="text-2xl font-bold text-foreground">{tokenStats.assigned_tokens}</div>
+				<div class="text-xs text-muted-foreground">Tokens Atribuídos</div>
+			</div>
+			<div class="bg-card border rounded-lg p-3">
+				<div class="text-2xl font-bold text-foreground">{tokenStats.available_tokens}</div>
+				<div class="text-xs text-muted-foreground">Tokens Disponíveis</div>
+			</div>
+			<div class="bg-card border rounded-lg p-3">
+				<div class="text-2xl font-bold text-foreground">{tokenStats.valid_tokens}</div>
+				<div class="text-xs text-muted-foreground">Tokens Válidos</div>
+			</div>
+			<div class="bg-card border rounded-lg p-3">
+				<div class="text-2xl font-bold text-foreground">{tokenStats.total_tokens}</div>
+				<div class="text-xs text-muted-foreground">Total de Tokens</div>
+			</div>
 		</div>
 
 		<!-- Token Source List -->
