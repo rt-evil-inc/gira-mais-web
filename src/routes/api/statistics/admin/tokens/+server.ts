@@ -53,11 +53,11 @@ export const GET: RequestHandler = async ({ url }) => {
 				SELECT 
 					created_at AS event_time,
 					1 AS change_amount,
-					'created' AS event_type
+					'created' AS event_type,
+					id
 				FROM "integrity_tokens"
 				WHERE 
 					created_at >= ${startDate} AND created_at <= ${endDate}
-					AND (assigned_to = '' OR assigned_to IS NULL)
 				
 				UNION ALL
 				
@@ -65,11 +65,12 @@ export const GET: RequestHandler = async ({ url }) => {
 				SELECT 
 					expires_at AS event_time,
 					-1 AS change_amount,
-					'expired' AS event_type
+					'expired' AS event_type,
+					id
 				FROM "integrity_tokens"
 				WHERE 
 					expires_at >= ${startDate} AND expires_at <= ${endDate}
-					AND (assigned_to = '' OR assigned_to IS NULL)
+					AND created_at < expires_at -- Only count tokens that were actually created before expiring
 				
 				UNION ALL
 				
@@ -77,22 +78,43 @@ export const GET: RequestHandler = async ({ url }) => {
 				SELECT 
 					assigned_at AS event_time,
 					-1 AS change_amount,
-					'assigned' AS event_type
+					'assigned' AS event_type,
+					id
 				FROM "integrity_tokens"
 				WHERE 
 					assigned_at >= ${startDate} AND assigned_at <= ${endDate}
 					AND assigned_at IS NOT NULL
-					AND assigned_to != '' AND assigned_to IS NOT NULL
+					AND (assigned_to != '' AND assigned_to IS NOT NULL)
+					AND created_at < assigned_at -- Only count tokens that were created before being assigned
+			),
+			-- Get initial count of available tokens at the start date
+			initial_count AS (
+				SELECT COUNT(*) as initial_available
+				FROM "integrity_tokens"
+				WHERE 
+					created_at < ${startDate}
+					AND expires_at > ${startDate}::timestamp
+					AND (assigned_to = '' OR assigned_to IS NULL OR assigned_at > ${startDate}::timestamp)
 			),
 			ordered_events AS (
 				SELECT 
 					event_time,
 					change_amount,
 					event_type,
-					SUM(change_amount) OVER (ORDER BY event_time) AS running_total
+					id,
+					SUM(change_amount) OVER (ORDER BY event_time, id) AS cumulative_change
 				FROM token_events
 				WHERE event_time IS NOT NULL
-				ORDER BY event_time
+				ORDER BY event_time, id
+			),
+			events_with_total AS (
+				SELECT 
+					event_time,
+					change_amount,
+					event_type,
+					id,
+					(SELECT initial_available FROM initial_count) + cumulative_change AS running_total
+				FROM ordered_events
 			),
 			-- Sample events by minute if there are too many
 			sampled_events AS (
@@ -100,13 +122,22 @@ export const GET: RequestHandler = async ({ url }) => {
 					to_char(event_time AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS timestamp,
 					LAST_VALUE(running_total) OVER (
 						PARTITION BY DATE_TRUNC('minute', event_time) 
-						ORDER BY event_time 
+						ORDER BY event_time, id
 						ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
 					) AS count
-				FROM ordered_events
+				FROM events_with_total
 			)
-			SELECT timestamp, count
-			FROM sampled_events
+			-- Add initial point at start date if we have data
+			SELECT timestamp, count FROM (
+				SELECT 
+					to_char(${startDate}::timestamp AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS timestamp,
+					(SELECT initial_available FROM initial_count) AS count
+				WHERE EXISTS (SELECT 1 FROM token_events LIMIT 1)
+				
+				UNION ALL
+				
+				SELECT timestamp, count FROM sampled_events
+			) combined_data
 			ORDER BY timestamp
 		`);
 
