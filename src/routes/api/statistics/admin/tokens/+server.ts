@@ -24,8 +24,8 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	try {
 		if (groupBy === 'total') {
-			// Get total available tokens in the given time range
-			// Available tokens are those that are not expired and not assigned
+			// For short-lived tokens, show total created in time range instead of currently available
+			// Since tokens expire in 1 hour, "available" count is mostly meaningless for historical data
 			const totalQuery = await db
 				.select({
 					count: sql<number>`COUNT(*)`,
@@ -33,9 +33,7 @@ export const GET: RequestHandler = async ({ url }) => {
 				.from(integrityTokens)
 				.where(
 					sql`${integrityTokens.createdAt} >= ${startDate} 
-						AND ${integrityTokens.createdAt} < ${endDate}
-						AND ${integrityTokens.expiresAt} > NOW()
-						AND (${integrityTokens.assignedTo} = '' OR ${integrityTokens.assignedTo} IS NULL)`,
+						AND ${integrityTokens.createdAt} < ${endDate}`,
 				);
 
 			const totalCount = totalQuery[0]?.count || 0;
@@ -45,106 +43,76 @@ export const GET: RequestHandler = async ({ url }) => {
 			});
 		}
 
-		// For continuous tracking, we'll create events for token creation and expiry
-		// Then calculate cumulative available tokens over time
-		const eventsQuery = await db.execute(sql`
-			WITH token_events AS (
-				-- Token creation events (tokens become available)
-				SELECT 
-					created_at AS event_time,
-					1 AS change_amount,
-					'created' AS event_type,
-					id
-				FROM "integrity_tokens"
-				WHERE 
-					created_at >= ${startDate} AND created_at <= ${endDate}
-				
-				UNION ALL
-				
-				-- Token expiry events (tokens become unavailable)
-				SELECT 
-					expires_at AS event_time,
-					-1 AS change_amount,
-					'expired' AS event_type,
-					id
-				FROM "integrity_tokens"
-				WHERE 
-					expires_at >= ${startDate} AND expires_at <= ${endDate}
-					AND created_at < expires_at -- Only count tokens that were actually created before expiring
-				
-				UNION ALL
-				
-				-- Token assignment events (tokens become unavailable)
-				SELECT 
-					assigned_at AS event_time,
-					-1 AS change_amount,
-					'assigned' AS event_type,
-					id
-				FROM "integrity_tokens"
-				WHERE 
-					assigned_at >= ${startDate} AND assigned_at <= ${endDate}
-					AND assigned_at IS NOT NULL
-					AND (assigned_to != '' AND assigned_to IS NOT NULL)
-					AND created_at < assigned_at -- Only count tokens that were created before being assigned
-			),
-			-- Get initial count of available tokens at the start date
-			initial_count AS (
-				SELECT COUNT(*) as initial_available
-				FROM "integrity_tokens"
-				WHERE 
-					created_at < ${startDate}
-					AND expires_at > ${startDate}::timestamp
-					AND (assigned_to = '' OR assigned_to IS NULL OR assigned_at > ${startDate}::timestamp)
-			),
-			ordered_events AS (
-				SELECT 
-					event_time,
-					change_amount,
-					event_type,
-					id,
-					SUM(change_amount) OVER (ORDER BY event_time, id) AS cumulative_change
-				FROM token_events
-				WHERE event_time IS NOT NULL
-				ORDER BY event_time, id
-			),
-			events_with_total AS (
-				SELECT 
-					event_time,
-					change_amount,
-					event_type,
-					id,
-					(SELECT initial_available FROM initial_count) + cumulative_change AS running_total
-				FROM ordered_events
-			),
-			-- Sample events by minute if there are too many
-			sampled_events AS (
-				SELECT DISTINCT ON (DATE_TRUNC('minute', event_time))
-					to_char(event_time AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS timestamp,
-					LAST_VALUE(running_total) OVER (
-						PARTITION BY DATE_TRUNC('minute', event_time) 
-						ORDER BY event_time, id
-						ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
-					) AS count
-				FROM events_with_total
-			)
-			-- Add initial point at start date if we have data
-			SELECT timestamp, count FROM (
-				SELECT 
-					to_char(${startDate}::timestamp AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS timestamp,
-					(SELECT initial_available FROM initial_count) AS count
-				WHERE EXISTS (SELECT 1 FROM token_events LIMIT 1)
-				
-				UNION ALL
-				
-				SELECT timestamp, count FROM sampled_events
-			) combined_data
-			ORDER BY timestamp
-		`);
+		// For tokens that expire in 1 hour, showing "available over time" is misleading
+		// Instead, show token creation rate and assignment rate over time
+		let eventsQuery;
 
-		// Format the results
+		if (groupBy === 'hour') {
+			eventsQuery = await db.execute(sql`
+				WITH time_series AS (
+					SELECT generate_series(
+						DATE_TRUNC('hour', ${startDate}::timestamp),
+						DATE_TRUNC('hour', ${endDate}::timestamp),
+						'1 hour'::interval
+					) AS time_bucket
+				),
+				token_stats AS (
+					SELECT
+						DATE_TRUNC('hour', created_at) AS time_bucket,
+						COUNT(*) as tokens_created,
+						COUNT(CASE WHEN assigned_to IS NOT NULL AND assigned_to != '' THEN 1 END) as tokens_assigned
+					FROM "integrity_tokens"
+					WHERE
+						created_at >= ${startDate} AND created_at <= ${endDate}
+					GROUP BY DATE_TRUNC('hour', created_at)
+				)
+				SELECT
+					to_char(ts.time_bucket AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS timestamp,
+					COALESCE(stats.tokens_created, 0) AS tokens_created,
+					COALESCE(stats.tokens_assigned, 0) AS tokens_assigned,
+					COALESCE(stats.tokens_created, 0) - COALESCE(stats.tokens_assigned, 0) AS tokens_unused
+				FROM time_series ts
+				LEFT JOIN token_stats stats ON ts.time_bucket = stats.time_bucket
+				ORDER BY ts.time_bucket
+			`);
+		} else {
+			eventsQuery = await db.execute(sql`
+				WITH time_series AS (
+					SELECT generate_series(
+						DATE_TRUNC('day', ${startDate}::timestamp),
+						DATE_TRUNC('day', ${endDate}::timestamp),
+						'1 day'::interval
+					) AS time_bucket
+				),
+				token_stats AS (
+					SELECT
+						DATE_TRUNC('day', created_at) AS time_bucket,
+						COUNT(*) as tokens_created,
+						COUNT(CASE WHEN assigned_to IS NOT NULL AND assigned_to != '' THEN 1 END) as tokens_assigned
+					FROM "integrity_tokens"
+					WHERE
+						created_at >= ${startDate} AND created_at <= ${endDate}
+					GROUP BY DATE_TRUNC('day', created_at)
+				)
+				SELECT
+					to_char(ts.time_bucket AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS timestamp,
+					COALESCE(stats.tokens_created, 0) AS tokens_created,
+					COALESCE(stats.tokens_assigned, 0) AS tokens_assigned,
+					COALESCE(stats.tokens_created, 0) - COALESCE(stats.tokens_assigned, 0) AS tokens_unused
+				FROM time_series ts
+				LEFT JOIN token_stats stats ON ts.time_bucket = stats.time_bucket
+				ORDER BY ts.time_bucket
+			`);
+		}
+
+		// Format the results - now showing creation/assignment patterns instead of "available"
 		const results = eventsQuery.map(row => ({
 			timestamp: row.timestamp,
-			count: Math.max(0, Number(row.count)), // Ensure count doesn't go negative
+			tokens_created: Number(row.tokens_created),
+			tokens_assigned: Number(row.tokens_assigned),
+			tokens_unused: Number(row.tokens_unused),
+			// For backward compatibility, use tokens_created as the main "count"
+			count: Number(row.tokens_created),
 		}));
 
 		return json({
