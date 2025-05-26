@@ -189,8 +189,8 @@
 		<!-- Chart Section -->
 		<div class="mb-6">
 			<StatisticsChart endpoint="admin/tokens" colorProperty="--primary" {interval} {groupBy} tension={0.0}
-				title="Criação de Tokens"
-				description="Número de tokens criados ao longo do tempo"
+				title="Tokens Disponíveis"
+				description="Número de tokens disponíveis ao longo do tempo"
 			/>
 		</div>
 

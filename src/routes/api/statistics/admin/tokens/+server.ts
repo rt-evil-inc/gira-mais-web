@@ -43,36 +43,52 @@ export const GET: RequestHandler = async ({ url }) => {
 			});
 		}
 
-		// For tokens that expire in 1 hour, showing "available over time" is misleading
-		// Instead, show token creation rate and assignment rate over time
+		// Calculate tokens available at each time point
+		// A token is available from created_at until either assigned_at or created_at + 1 hour
 		let eventsQuery;
 
 		if (groupBy === 'hour') {
 			eventsQuery = await db.execute(sql`
 				WITH time_series AS (
 					SELECT generate_series(
-						DATE_TRUNC('hour', ${startDate}::timestamp),
-						DATE_TRUNC('hour', ${endDate}::timestamp),
-						'1 hour'::interval
+						DATE_TRUNC('hour', ${startDate}::timestamp) + 
+						(EXTRACT(MINUTE FROM ${startDate}::timestamp)::int / 15) * INTERVAL '15 minutes',
+						DATE_TRUNC('hour', ${endDate}::timestamp) + 
+						(EXTRACT(MINUTE FROM ${endDate}::timestamp)::int / 15) * INTERVAL '15 minutes',
+						'15 minutes'::interval
 					) AS time_bucket
 				),
-				token_stats AS (
-					SELECT
-						DATE_TRUNC('hour', created_at) AS time_bucket,
-						COUNT(*) as tokens_created,
-						COUNT(CASE WHEN assigned_to IS NOT NULL AND assigned_to != '' THEN 1 END) as tokens_assigned
-					FROM "integrity_tokens"
-					WHERE
-						created_at >= ${startDate} AND created_at <= ${endDate}
-					GROUP BY DATE_TRUNC('hour', created_at)
+				available_tokens AS (
+					SELECT 
+						ts.time_bucket,
+						COUNT(*) as available_count
+					FROM time_series ts
+					CROSS JOIN "integrity_tokens" it
+					WHERE 
+						-- Token was created before this time bucket
+						it.created_at <= ts.time_bucket
+						-- Token is still available at this time bucket
+						AND (
+							-- Either not assigned yet and hasn't expired (1 hour after creation)
+							(
+								(it.assigned_to IS NULL OR it.assigned_to = '') 
+								AND it.created_at + INTERVAL '1 hour' > ts.time_bucket
+							)
+							-- Or was assigned after this time bucket
+							OR (
+								it.assigned_at IS NOT NULL 
+								AND it.assigned_at > ts.time_bucket
+							)
+						)
+						-- Token was created before the end of our query range
+						AND it.created_at <= ${endDate}::timestamp
+					GROUP BY ts.time_bucket
 				)
 				SELECT
 					to_char(ts.time_bucket AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS timestamp,
-					COALESCE(stats.tokens_created, 0) AS tokens_created,
-					COALESCE(stats.tokens_assigned, 0) AS tokens_assigned,
-					COALESCE(stats.tokens_created, 0) - COALESCE(stats.tokens_assigned, 0) AS tokens_unused
+					COALESCE(at.available_count, 0) AS available_tokens
 				FROM time_series ts
-				LEFT JOIN token_stats stats ON ts.time_bucket = stats.time_bucket
+				LEFT JOIN available_tokens at ON ts.time_bucket = at.time_bucket
 				ORDER BY ts.time_bucket
 			`);
 		} else {
@@ -84,35 +100,47 @@ export const GET: RequestHandler = async ({ url }) => {
 						'1 day'::interval
 					) AS time_bucket
 				),
-				token_stats AS (
-					SELECT
-						DATE_TRUNC('day', created_at) AS time_bucket,
-						COUNT(*) as tokens_created,
-						COUNT(CASE WHEN assigned_to IS NOT NULL AND assigned_to != '' THEN 1 END) as tokens_assigned
-					FROM "integrity_tokens"
-					WHERE
-						created_at >= ${startDate} AND created_at <= ${endDate}
-					GROUP BY DATE_TRUNC('day', created_at)
+				available_tokens AS (
+					SELECT 
+						ts.time_bucket,
+						COUNT(*) as available_count
+					FROM time_series ts
+					CROSS JOIN "integrity_tokens" it
+					WHERE 
+						-- Token was created before this time bucket
+						it.created_at <= ts.time_bucket
+						-- Token is still available at this time bucket
+						AND (
+							-- Either not assigned yet and hasn't expired (1 hour after creation)
+							(
+								(it.assigned_to IS NULL OR it.assigned_to = '') 
+								AND it.created_at + INTERVAL '1 hour' > ts.time_bucket
+							)
+							-- Or was assigned after this time bucket
+							OR (
+								it.assigned_at IS NOT NULL 
+								AND it.assigned_at > ts.time_bucket
+							)
+						)
+						-- Token was created before the end of our query range
+						AND it.created_at <= ${endDate}::timestamp
+					GROUP BY ts.time_bucket
 				)
 				SELECT
 					to_char(ts.time_bucket AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS timestamp,
-					COALESCE(stats.tokens_created, 0) AS tokens_created,
-					COALESCE(stats.tokens_assigned, 0) AS tokens_assigned,
-					COALESCE(stats.tokens_created, 0) - COALESCE(stats.tokens_assigned, 0) AS tokens_unused
+					COALESCE(at.available_count, 0) AS available_tokens
 				FROM time_series ts
-				LEFT JOIN token_stats stats ON ts.time_bucket = stats.time_bucket
+				LEFT JOIN available_tokens at ON ts.time_bucket = at.time_bucket
 				ORDER BY ts.time_bucket
 			`);
 		}
 
-		// Format the results - now showing creation/assignment patterns instead of "available"
+		// Format the results - now showing available tokens over time
 		const results = eventsQuery.map(row => ({
 			timestamp: row.timestamp,
-			tokens_created: Number(row.tokens_created),
-			tokens_assigned: Number(row.tokens_assigned),
-			tokens_unused: Number(row.tokens_unused),
-			// For backward compatibility, use tokens_created as the main "count"
-			count: Number(row.tokens_created),
+			available_tokens: Number(row.available_tokens),
+			// For backward compatibility, use available_tokens as the main "count"
+			count: Number(row.available_tokens),
 		}));
 
 		return json({
