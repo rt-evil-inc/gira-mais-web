@@ -8,6 +8,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import StatisticsControls from '$lib/components/StatisticsControls.svelte';
 	import StatisticsChart from '$lib/components/AreaChart.svelte';
+	import TokenMonitor from '$lib/components/TokenMonitor.svelte';
 	import { getLocalTimeZone, today } from '@internationalized/date';
 
 	let message = $state('');
@@ -121,6 +122,11 @@
 				{/if}
 			</CardContent>
 		</Card>
+	</div>
+
+	<!-- Token Monitoring Section -->
+	<div class="mt-12">
+		<TokenMonitor />
 	</div>
 
 	<!-- Chart Controls -->
