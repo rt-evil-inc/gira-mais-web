@@ -3,7 +3,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import { getLocalTimeZone } from '@internationalized/date';
 	import { Chart, type ChartDataset } from 'chart.js/auto';
-	import { TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js';
+	import { TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, type ChartTypeRegistry } from 'chart.js';
 	import 'chartjs-adapter-date-fns';
 	import { mode } from 'mode-watcher';
 	import Spinner from '$lib/components/Spinner.svelte';
@@ -14,8 +14,8 @@
 	let { endpoint, interval, groupBy, title, description, colorProperty = '--primary' } = $props();
 
 	let isSmallInterval = $derived(interval?.start?.add({ days: 1 }) >= interval?.end);
-	let isLargeInterval = $derived(interval?.start?.add({ weeks: 2 }) < interval?.end);
-	let chartInstance: any = null;
+	// let isLargeInterval = $derived(interval?.start?.add({ weeks: 2 }) < interval?.end);
+	let chartInstance: Chart<keyof ChartTypeRegistry, { x: Date; y: number }[]> | null = null;
 	let chartCanvas = $state<HTMLCanvasElement | null>(null);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
@@ -106,7 +106,25 @@
 		if (chartInstance) chartInstance.destroy();
 
 		// Create annotations for GitHub releases
-		const annotations: Record<string, any> = {};
+		const annotations: {
+			type: 'line';
+			scaleID: 'x';
+			value: string;
+			borderColor: string;
+			borderWidth: number;
+			label: {
+				display: boolean;
+				content: string;
+				position: 'start';
+				backgroundColor: string;
+				color: string;
+				font: {
+					weight: 'bold';
+					family: string;
+				};
+				padding: number;
+			};
+		}[] = [];
 
 		if (chartData.length > 0) {
 			const firstDataDate = new Date(chartData[0].timestamp);
@@ -116,16 +134,16 @@
 				const releaseDate = new Date(release.published_at);
 				// Only add annotation if within the chart timeframe
 				if (releaseDate >= firstDataDate && releaseDate <= lastDataDate) {
-					annotations[`release-${index}`] = {
+					annotations[index] = {
 						type: 'line',
 						scaleID: 'x',
-						value: releaseDate,
+						value: releaseDate.toISOString(),
 						borderColor: `hsl(${style.getPropertyValue('--secondary-foreground')})`,
 						borderWidth: 2,
 						label: {
 							display: true,
 							content: release.tag_name,
-							position: 'top',
+							position: 'start',
 							backgroundColor: `hsl(${style.getPropertyValue('--secondary-foreground')})`,
 							color: `hsl(${style.getPropertyValue('--secondary')})`,
 							font: {

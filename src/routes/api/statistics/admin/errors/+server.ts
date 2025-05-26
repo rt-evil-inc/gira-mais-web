@@ -84,7 +84,7 @@ export const GET: RequestHandler = async ({ url }) => {
     `);
 
 		// Format the results
-		const results = seriesQuery.map((row: any) => ({
+		const results = seriesQuery.map(row => ({
 			timestamp: row.timestamp,
 			count: Number(row.count),
 		}));
