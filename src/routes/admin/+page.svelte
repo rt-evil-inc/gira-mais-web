@@ -7,8 +7,8 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
 	import StatisticsControls from '$lib/components/StatisticsControls.svelte';
-	import StatisticsChart from '$lib/components/AreaChart.svelte';
 	import TokenMonitor from '$lib/components/TokenMonitor.svelte';
+	import ErrorDashboard from '$lib/components/ErrorDashboard.svelte';
 	import { getLocalTimeZone, today } from '@internationalized/date';
 	import type { PageProps } from './$types';
 
@@ -139,9 +139,6 @@
 
 	<!-- Statistics Charts -->
 	<div class="mt-4">
-		<StatisticsChart endpoint="admin/errors" colorProperty="--warning" {interval} {groupBy}
-			title="Erros"
-			description="Número de erros ao longo do tempo"
-		/>
+		<ErrorDashboard errorData={data.errorData} {interval} {groupBy} />
 	</div>
 </div>

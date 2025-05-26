@@ -256,27 +256,16 @@
 	});
 </script>
 
-<Card.Root class="h-full">
-	<Card.CardHeader>
-		<Card.CardTitle>{title}</Card.CardTitle>
-		<Card.CardDescription>
-			{description}
-		</Card.CardDescription>
-	</Card.CardHeader>
-
-	<Card.CardContent>
-		<div class="h-80 relative">
-			{#if loading}
-				<div class="absolute inset-0 flex items-center justify-center">
-					<Spinner />
-				</div>
-			{:else if error}
-				<div class="absolute inset-0 flex items-center justify-center">
-					<p class="text-destructive">Error: {error}</p>
-				</div>
-			{:else}
-				<canvas bind:this={chartCanvas} height="400"></canvas>
-			{/if}
+<div class="h-80 relative">
+	{#if loading}
+		<div class="absolute inset-0 flex items-center justify-center">
+			<Spinner />
 		</div>
-	</Card.CardContent>
-</Card.Root>
+	{:else if error}
+		<div class="absolute inset-0 flex items-center justify-center">
+			<p class="text-destructive">Error: {error}</p>
+		</div>
+	{:else}
+		<canvas bind:this={chartCanvas} height="400"></canvas>
+	{/if}
+</div>
