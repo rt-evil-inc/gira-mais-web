@@ -99,26 +99,22 @@
 				</div>
 			{:else}
 				<div class="space-y-4">
-					<div class="flex items-center justify-between">
+					<button
+						class="w-full flex items-center justify-between p-2 -m-2 rounded hover:bg-muted/50 transition-colors cursor-pointer"
+						onclick={toggleErrorList}
+					>
 						<div class="flex items-center gap-2">
 							<h3 class="text-lg font-semibold">Erros Recentes</h3>
-							<Button
-								variant="ghost"
-								size="sm"
-								onclick={toggleErrorList}
-								class="p-1 h-auto"
-							>
-								{#if isErrorListCollapsed}
-									<ChevronDown class="h-4 w-4" />
-								{:else}
-									<ChevronUp class="h-4 w-4" />
-								{/if}
-							</Button>
+							{#if isErrorListCollapsed}
+								<ChevronDown class="h-4 w-4" />
+							{:else}
+								<ChevronUp class="h-4 w-4" />
+							{/if}
 						</div>
 						<p class="text-sm text-muted-foreground">
 							{errorData.errors.length} erros mais recentes (de {errorData.errorCount} total)
 						</p>
-					</div>
+					</button>
 
 					{#if !isErrorListCollapsed}
 						<div class="space-y-2 max-h-96 overflow-y-auto">

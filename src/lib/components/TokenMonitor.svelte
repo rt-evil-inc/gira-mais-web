@@ -179,22 +179,20 @@
 			{#each filteredTokenSources as tokenSource (tokenSource.id)}
 				{@const statusBadge = getStatusBadge(tokenSource.minutesAgo)}
 				<Card class="border">
-					<CardContent class="p-4">
-						<div class="flex items-center justify-between">
+					<CardContent class="p-2">
+						<button
+							class="w-full flex items-center justify-between p-2 rounded hover:bg-muted/50 transition-colors cursor-pointer"
+							onclick={() => toggleTokenSourceExpanded(tokenSource.id)}
+						>
 							<div class="flex items-center gap-3">
-								<Button
-									variant="ghost"
-									size="sm"
-									class="h-6 w-6 p-0"
-									onclick={() => toggleTokenSourceExpanded(tokenSource.id)}
-								>
+								<div class="flex items-center justify-center h-6 w-6">
 									{#if openTokenSources.includes(tokenSource.id)}
 										<ChevronDown class="h-4 w-4" />
 									{:else}
 										<ChevronRight class="h-4 w-4" />
 									{/if}
-								</Button>
-								<div>
+								</div>
+								<div class="text-left">
 									<div class="font-medium">{tokenSource.id}</div>
 									<div class="text-sm text-muted-foreground flex items-center gap-1">
 										<Clock class="h-3 w-3" />
@@ -213,7 +211,7 @@
 									</div>
 								</div>
 							</div>
-						</div>
+						</button>
 
 						<!-- Expanded Details -->
 						{#if openTokenSources.includes(tokenSource.id)}
