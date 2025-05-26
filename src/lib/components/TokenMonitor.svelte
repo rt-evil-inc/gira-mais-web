@@ -52,7 +52,8 @@
 
 	async function loadTokenSource(tokenSourceId: string) {
 		try {
-			const res = await fetch(`/api/admin/tokens/${tokenSourceId}/history`);
+			const encodedTokenSourceId = encodeURIComponent(tokenSourceId);
+			const res = await fetch(`/api/admin/tokens/${encodedTokenSourceId}/history`);
 			if (!res.ok) throw new Error('Erro ao carregar histórico');
 
 			const data: {

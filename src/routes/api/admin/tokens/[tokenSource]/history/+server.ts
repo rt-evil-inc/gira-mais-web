@@ -5,7 +5,8 @@ import { integrityTokens } from '$lib/server/db/schema';
 import { eq, desc } from 'drizzle-orm';
 
 export const GET: RequestHandler = async ({ params }) => {
-	const { tokenSource: thisTokenSource } = params;
+	const { tokenSource: encodedTokenSource } = params;
+	const thisTokenSource = decodeURIComponent(encodedTokenSource);
 
 	try {
 		// Get last 10 tokens for this token source
