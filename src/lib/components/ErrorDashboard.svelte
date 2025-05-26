@@ -95,7 +95,7 @@
 				<div class="text-center py-8 text-muted-foreground">
 					<AlertTriangle class="h-12 w-12 mx-auto mb-4 text-green-500" />
 					<p class="text-lg font-medium text-green-600">Nenhum erro nas últimas 24 horas!</p>
-					<p class="text-sm">Sistema funcionando corretamente</p>
+					<p class="text-sm">Sistema a funcionar sem erros</p>
 				</div>
 			{:else}
 				<div class="space-y-4">

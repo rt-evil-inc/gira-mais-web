@@ -119,7 +119,7 @@
 			<div>
 				<CardTitle class="flex items-center gap-2">
 					<Smartphone class="h-5 w-5" />
-					Monitoramento de Tokens
+					Monitorização de Tokens
 				</CardTitle>
 				<CardDescription>
 					Monitore os seus tokens em tempo real
@@ -150,7 +150,7 @@
 				/>
 			</div>
 			<Badge variant="outline">
-				{filteredTokenSources.length} telefones
+				{filteredTokenSources.length} fonte{ filteredTokenSources.length !== 1 ? 's' : ''} de tokens
 			</Badge>
 		</div>
 
