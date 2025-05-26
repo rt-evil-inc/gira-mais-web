@@ -6,13 +6,13 @@
 	import { ChevronDown, ChevronRight, Search, RefreshCw, Clock, Smartphone } from 'lucide-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import { pt } from 'date-fns/locale';
+	import { invalidate, invalidateAll } from '$app/navigation';
 
 	interface TokenSource {
 		id: string;
 		lastTokenAt: string;
 		minutesAgo: number;
 		tokenCount: number;
-		isExpanded?: boolean;
 	}
 
 	interface TokenRequest {
@@ -21,7 +21,8 @@
 		token: string;
 	}
 
-	let tokenSources = $state<TokenSource[]>([]);
+	let { tokenSources }: { tokenSources: TokenSource[] } = $props();
+	let openTokenSources = $state<string[]>([]);
 	let selectedTokens = $state<{ [tokenSource: string]: TokenRequest[] }>({});
 	let searchTerm = $state('');
 	let isLoading = $state(false);
@@ -34,21 +35,7 @@
 	});
 
 	async function loadTokenSources() {
-		try {
-			isLoading = true;
-			const res = await fetch('/api/admin/tokens');
-			if (!res.ok) throw new Error('Erro ao carregar telefones');
-
-			const data = await res.json();
-			tokenSources = data.tokenSources.map((tokenSource: TokenSource) => ({
-				...tokenSource,
-				isExpanded: tokenSources.find(p => p.id === tokenSource.id)?.isExpanded || false,
-			}));
-		} catch (err) {
-			console.error('Erro ao carregar telefones:', err);
-		} finally {
-			isLoading = false;
-		}
+		await invalidate('/api/admin/tokens');
 	}
 
 	async function loadTokenSource(tokenSourceId: string) {
@@ -73,10 +60,11 @@
 	}
 
 	function toggleTokenSourceExpanded(tokenSourceId: string) {
-		const tokenSource = tokenSources.find(p => p.id === tokenSourceId);
-		if (tokenSource) {
-			tokenSource.isExpanded = !tokenSource.isExpanded;
-			if (tokenSource.isExpanded && !selectedTokens[tokenSourceId]) {
+		if (openTokenSources.includes(tokenSourceId)) {
+			openTokenSources = openTokenSources.filter(id => id !== tokenSourceId);
+		} else {
+			openTokenSources = [...openTokenSources, tokenSourceId];
+			if (!selectedTokens[tokenSourceId]) {
 				loadTokenSource(tokenSourceId);
 			}
 		}
@@ -109,10 +97,7 @@
 		}
 	});
 
-	// Initial load
-	$effect(() => {
-		loadTokenSources();
-	});
+// Initial load
 </script>
 
 <Card>
@@ -170,7 +155,7 @@
 									class="h-6 w-6 p-0"
 									onclick={() => toggleTokenSourceExpanded(tokenSource.id)}
 								>
-									{#if tokenSource.isExpanded}
+									{#if openTokenSources.includes(tokenSource.id)}
 										<ChevronDown class="h-4 w-4" />
 									{:else}
 										<ChevronRight class="h-4 w-4" />
@@ -198,7 +183,7 @@
 						</div>
 
 						<!-- Expanded Details -->
-						{#if tokenSource.isExpanded}
+						{#if openTokenSources.includes(tokenSource.id)}
 							<div class="mt-4 pt-4 border-t">
 								{#if selectedTokens[tokenSource.id]}
 									<!-- Recent Tokens -->

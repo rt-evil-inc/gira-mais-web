@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { toast } from 'svelte-sonner';
@@ -10,6 +10,9 @@
 	import StatisticsChart from '$lib/components/AreaChart.svelte';
 	import TokenMonitor from '$lib/components/TokenMonitor.svelte';
 	import { getLocalTimeZone, today } from '@internationalized/date';
+	import type { PageProps } from './$types';
+
+	let { data }: PageProps = $props();
 
 	let message = $state('');
 	let showAlways = $state(false);
@@ -126,7 +129,7 @@
 
 	<!-- Token Monitoring Section -->
 	<div class="mt-12">
-		<TokenMonitor />
+		<TokenMonitor tokenSources={data.tokenSources}/>
 	</div>
 
 	<!-- Chart Controls -->
