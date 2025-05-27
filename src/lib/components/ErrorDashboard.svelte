@@ -7,7 +7,8 @@
 	import { pt } from 'date-fns/locale';
 	import { invalidate } from '$app/navigation';
 	import StatisticsChart from '$lib/components/AreaChart.svelte';
-	import type { CalendarDate } from '@internationalized/date';
+	import StatisticsControls from '$lib/components/StatisticsControls.svelte';
+	import { getLocalTimeZone, today } from '@internationalized/date';
 
 	interface ErrorItem {
 		id: number;
@@ -24,13 +25,16 @@
 
 	let {
 		errorData,
-		interval,
-		groupBy,
 	}: {
 		errorData: ErrorData;
-		interval: { start: CalendarDate; end: CalendarDate };
-		groupBy: string;
 	} = $props();
+
+	// Internal state for chart controls
+	let interval = $state({
+		start: today(getLocalTimeZone()).add({ days: -7 }),
+		end: today(getLocalTimeZone()),
+	});
+	let groupBy = $state('hour');
 
 	// State for collapsible and pagination
 	let isErrorListCollapsed = $state(false);
@@ -81,6 +85,11 @@
 	</CardHeader>
 
 	<CardContent class="space-y-6">
+		<!-- Chart Controls -->
+		<div>
+			<StatisticsControls bind:interval bind:groupBy />
+		</div>
+
 		<!-- Chart Section -->
 		<div>
 			<StatisticsChart endpoint="admin/errors" colorProperty="--warning" {interval} {groupBy}

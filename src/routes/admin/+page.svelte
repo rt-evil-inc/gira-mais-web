@@ -6,7 +6,6 @@
 	import { Settings } from 'lucide-svelte';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
-	import StatisticsControls from '$lib/components/StatisticsControls.svelte';
 	import TokenMonitor from '$lib/components/TokenMonitor.svelte';
 	import ErrorDashboard from '$lib/components/ErrorDashboard.svelte';
 	import { getLocalTimeZone, today } from '@internationalized/date';
@@ -20,7 +19,6 @@
 		start: today(getLocalTimeZone()).add({ days: -7 }),
 		end: today(getLocalTimeZone()),
 	});
-	let groupBy = $state('hour');
 
 	async function updateMessage() {
 		try {
@@ -129,16 +127,11 @@
 
 	<!-- Token Monitoring Section -->
 	<div class="mt-12">
-		<TokenMonitor tokenSources={data.tokenSources} tokenStats={data.tokenStats} {interval} {groupBy}/>
-	</div>
-
-	<!-- Chart Controls -->
-	<div class="mt-8 mb-4">
-		<StatisticsControls bind:interval bind:groupBy />
+		<TokenMonitor tokenSources={data.tokenSources} tokenStats={data.tokenStats} {interval}/>
 	</div>
 
 	<!-- Statistics Charts -->
 	<div class="mt-4">
-		<ErrorDashboard errorData={data.errorData} {interval} {groupBy} />
+		<ErrorDashboard errorData={data.errorData} />
 	</div>
 </div>

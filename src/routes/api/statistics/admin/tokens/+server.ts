@@ -19,133 +19,119 @@ export const GET: RequestHandler = async ({ url }) => {
 		endDate = (new Date).toISOString();
 	} else {
 		endDate = new Date(Date.parse(endDate)).toISOString();
-	}
-	const groupBy = url.searchParams.get('groupBy') || 'day'; // hour, day, total
+	}	try {
+		// Fetch all tokens that were created or assigned within the date range
+		// We need to extend the range to include tokens created before startDate that might still be available
+		const extendedStartDate = new Date(new Date(startDate).getTime() - 60 * 60 * 1000).toISOString(); // 1 hour before
 
-	try {
-		if (groupBy === 'total') {
-			// For short-lived tokens, show total created in time range instead of currently available
-			// Since tokens expire in 1 hour, "available" count is mostly meaningless for historical data
-			const totalQuery = await db
-				.select({
-					count: sql<number>`COUNT(*)`,
-				})
-				.from(integrityTokens)
-				.where(
-					sql`${integrityTokens.createdAt} >= ${startDate} 
-						AND ${integrityTokens.createdAt} < ${endDate}`,
-				);
+		const tokensQuery = await db
+			.select({
+				id: integrityTokens.id,
+				createdAt: integrityTokens.createdAt,
+				assignedAt: integrityTokens.assignedAt,
+				assignedTo: integrityTokens.assignedTo,
+			})
+			.from(integrityTokens)
+			.where(
+				sql`${integrityTokens.createdAt} >= ${extendedStartDate} 
+					AND ${integrityTokens.createdAt} <= ${endDate}`,
+			);
 
-			const totalCount = totalQuery[0]?.count || 0;
-			return json({
-				data: totalCount,
-				meta: { startDate, endDate, groupBy },
+		// Create events for token lifecycle
+		type TokenEvent = {
+			timestamp: Date;
+			type: 'created' | 'assigned' | 'expired';
+			tokenId: number;
+			change: number; // +1 for available, -1 for unavailable
+		};
+
+		const events: TokenEvent[] = [];
+
+		for (const token of tokensQuery) {
+			const createdAt = new Date(token.createdAt);
+			const expiresAt = new Date(createdAt.getTime() + 60 * 60 * 1000); // 1 hour after creation
+
+			// Token becomes available when created
+			events.push({
+				timestamp: createdAt,
+				type: 'created',
+				tokenId: token.id,
+				change: 1,
 			});
+
+			// Token becomes unavailable when assigned or expired (whichever comes first)
+			if (token.assignedAt) {
+				const assignedAt = new Date(token.assignedAt);
+				if (assignedAt < expiresAt) {
+					// Assigned before expiry
+					events.push({
+						timestamp: assignedAt,
+						type: 'assigned',
+						tokenId: token.id,
+						change: -1,
+					});
+				} else {
+					// Expired before assignment (shouldn't happen but handle gracefully)
+					events.push({
+						timestamp: expiresAt,
+						type: 'expired',
+						tokenId: token.id,
+						change: -1,
+					});
+				}
+			} else {
+				// Not assigned, so it expires after 1 hour
+				events.push({
+					timestamp: expiresAt,
+					type: 'expired',
+					tokenId: token.id,
+					change: -1,
+				});
+			}
 		}
 
-		// Calculate tokens available at each time point
-		// A token is available from created_at until either assigned_at or created_at + 1 hour
-		let eventsQuery;
+		// Sort events by timestamp
+		events.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
-		if (groupBy === 'hour') {
-			eventsQuery = await db.execute(sql`
-				WITH time_series AS (
-					SELECT generate_series(
-						DATE_TRUNC('hour', ${startDate}::timestamp) + 
-						(EXTRACT(MINUTE FROM ${startDate}::timestamp)::int / 15) * INTERVAL '15 minutes',
-						DATE_TRUNC('hour', ${endDate}::timestamp) + 
-						(EXTRACT(MINUTE FROM ${endDate}::timestamp)::int / 15) * INTERVAL '15 minutes',
-						'15 minutes'::interval
-					) AS time_bucket
-				),
-				available_tokens AS (
-					SELECT 
-						ts.time_bucket,
-						COUNT(*) as available_count
-					FROM time_series ts
-					CROSS JOIN "integrity_tokens" it
-					WHERE 
-						-- Token was created before this time bucket
-						it.created_at <= ts.time_bucket
-						-- Token is still available at this time bucket
-						AND (
-							-- Either not assigned yet and hasn't expired (1 hour after creation)
-							(
-								(it.assigned_to IS NULL OR it.assigned_to = '') 
-								AND it.created_at + INTERVAL '1 hour' > ts.time_bucket
-							)
-							-- Or was assigned after this time bucket
-							OR (
-								it.assigned_at IS NOT NULL 
-								AND it.assigned_at > ts.time_bucket
-							)
-						)
-						-- Token was created before the end of our query range
-						AND it.created_at <= ${endDate}::timestamp
-					GROUP BY ts.time_bucket
-				)
-				SELECT
-					to_char(ts.time_bucket AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS timestamp,
-					COALESCE(at.available_count, 0) AS available_tokens
-				FROM time_series ts
-				LEFT JOIN available_tokens at ON ts.time_bucket = at.time_bucket
-				ORDER BY ts.time_bucket
-			`);
-		} else {
-			eventsQuery = await db.execute(sql`
-				WITH time_series AS (
-					SELECT generate_series(
-						DATE_TRUNC('day', ${startDate}::timestamp),
-						DATE_TRUNC('day', ${endDate}::timestamp),
-						'1 day'::interval
-					) AS time_bucket
-				),
-				available_tokens AS (
-					SELECT 
-						ts.time_bucket,
-						COUNT(*) as available_count
-					FROM time_series ts
-					CROSS JOIN "integrity_tokens" it
-					WHERE 
-						-- Token was created before this time bucket
-						it.created_at <= ts.time_bucket
-						-- Token is still available at this time bucket
-						AND (
-							-- Either not assigned yet and hasn't expired (1 hour after creation)
-							(
-								(it.assigned_to IS NULL OR it.assigned_to = '') 
-								AND it.created_at + INTERVAL '1 hour' > ts.time_bucket
-							)
-							-- Or was assigned after this time bucket
-							OR (
-								it.assigned_at IS NOT NULL 
-								AND it.assigned_at > ts.time_bucket
-							)
-						)
-						-- Token was created before the end of our query range
-						AND it.created_at <= ${endDate}::timestamp
-					GROUP BY ts.time_bucket
-				)
-				SELECT
-					to_char(ts.time_bucket AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS timestamp,
-					COALESCE(at.available_count, 0) AS available_tokens
-				FROM time_series ts
-				LEFT JOIN available_tokens at ON ts.time_bucket = at.time_bucket
-				ORDER BY ts.time_bucket
-			`);
+		// Calculate running total and create continuous event stream
+		let availableCount = 0;
+		const startDateTime = new Date(startDate);
+		const endDateTime = new Date(endDate);
+
+		// Calculate initial state (tokens available at startDate)
+		for (const event of events) {
+			if (event.timestamp < startDateTime) {
+				availableCount += event.change;
+			}
 		}
 
-		// Format the results - now showing available tokens over time
-		const results = eventsQuery.map(row => ({
-			timestamp: row.timestamp,
-			available_tokens: Number(row.available_tokens),
-			// For backward compatibility, use available_tokens as the main "count"
-			count: Number(row.available_tokens),
-		}));
+		// Create results array with only events within the date range
+		const results: Array<{
+			timestamp: string;
+			available_tokens: number;
+			count: number;
+			event_type: string;
+			token_id: number;
+		}> = [];
+
+		// Process events within the requested date range
+		for (const event of events) {
+			if (event.timestamp >= startDateTime && event.timestamp <= endDateTime) {
+				availableCount += event.change;
+
+				results.push({
+					timestamp: event.timestamp.toISOString(),
+					available_tokens: Math.max(0, availableCount),
+					count: Math.max(0, availableCount),
+					event_type: event.type,
+					token_id: event.tokenId,
+				});
+			}
+		}
 
 		return json({
 			data: results,
-			meta: { startDate, endDate, groupBy },
+			meta: { startDate, endDate },
 		});
 	} catch (err) {
 		console.error('Error fetching token statistics data:', err);
