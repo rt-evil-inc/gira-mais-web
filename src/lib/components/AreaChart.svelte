@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { getLocalTimeZone } from '@internationalized/date';
 	import { Chart, type ChartDataset } from 'chart.js/auto';
+	import * as Card from '$lib/components/ui/card';
 	import { TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, type ChartTypeRegistry } from 'chart.js';
 	import 'chartjs-adapter-date-fns';
 	import { mode } from 'mode-watcher';
@@ -10,7 +11,7 @@
 
 	Chart.register(TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, annotationPlugin);
 
-	let { endpoint, interval, groupBy, title, colorProperty = '--primary', tension = 0.4 } = $props();
+	let { endpoint, interval, groupBy, title, description, colorProperty = '--primary', tension = 0.4 } = $props();
 
 	let isSmallInterval = $derived(interval?.start?.add({ days: 1 }) >= interval?.end);
 	// let isLargeInterval = $derived(interval?.start?.add({ weeks: 2 }) < interval?.end);
@@ -256,16 +257,27 @@
 	});
 </script>
 
-<div class="h-80 relative">
-	{#if loading}
-		<div class="absolute inset-0 flex items-center justify-center">
-			<Spinner />
+<Card.Root class="h-full">
+	<Card.CardHeader>
+		<Card.CardTitle>{title}</Card.CardTitle>
+		<Card.CardDescription>
+			{description}
+		</Card.CardDescription>
+	</Card.CardHeader>
+
+	<Card.CardContent>
+		<div class="h-80 relative">
+			{#if loading}
+				<div class="absolute inset-0 flex items-center justify-center">
+					<Spinner />
+				</div>
+			{:else if error}
+				<div class="absolute inset-0 flex items-center justify-center">
+					<p class="text-destructive">Error: {error}</p>
+				</div>
+			{:else}
+				<canvas bind:this={chartCanvas} height="400"></canvas>
+			{/if}
 		</div>
-	{:else if error}
-		<div class="absolute inset-0 flex items-center justify-center">
-			<p class="text-destructive">Error: {error}</p>
-		</div>
-	{:else}
-		<canvas bind:this={chartCanvas} height="400"></canvas>
-	{/if}
-</div>
+	</Card.CardContent>
+</Card.Root>
