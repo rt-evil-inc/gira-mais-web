@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import * as Card from '$lib/components/ui/card';
 	import { getLocalTimeZone } from '@internationalized/date';
 	import { Chart, type ChartDataset } from 'chart.js/auto';
 	import { TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, type ChartTypeRegistry } from 'chart.js';
@@ -11,7 +10,7 @@
 
 	Chart.register(TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, annotationPlugin);
 
-	let { endpoint, interval, groupBy, title, description, colorProperty = '--primary', tension = 0.4 } = $props();
+	let { endpoint, interval, groupBy, title, colorProperty = '--primary', tension = 0.4 } = $props();
 
 	let isSmallInterval = $derived(interval?.start?.add({ days: 1 }) >= interval?.end);
 	// let isLargeInterval = $derived(interval?.start?.add({ weeks: 2 }) < interval?.end);
@@ -130,11 +129,11 @@
 			const firstDataDate = new Date(chartData[0].timestamp);
 			const lastDataDate = new Date(chartData[chartData.length - 1].timestamp);
 
-			releasesData?.forEach((release, index) => {
+			releasesData?.forEach(release => {
 				const releaseDate = new Date(release.published_at);
 				// Only add annotation if within the chart timeframe
 				if (releaseDate >= firstDataDate && releaseDate <= lastDataDate) {
-					annotations[index] = {
+					annotations.push({
 						type: 'line',
 						scaleID: 'x',
 						value: releaseDate.toISOString(),
@@ -152,10 +151,11 @@
 							},
 							padding: 4,
 						},
-					};
+					});
 				}
 			});
 		}
+		console.log('Annotations:', annotations);
 
 		// Create a new chart with time axis
 		chartInstance = new Chart(chartCanvas, {
