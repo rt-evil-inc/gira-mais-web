@@ -21,6 +21,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		endDate = new Date(Date.parse(endDate)).toISOString();
 	}
 	const groupBy = url.searchParams.get('groupBy') || 'day'; // hour, day, total
+	const timezone = url.searchParams.get('timezone') || 'UTC';
 
 	try {
 		if (groupBy === 'total') {
@@ -37,7 +38,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			const totalCount = totalQuery[0]?.count || 0;
 			return json({
 				data: totalCount,
-				meta: { startDate, endDate, groupBy },
+				meta: { startDate, endDate, groupBy, timezone },
 			});
 		}
 
@@ -57,14 +58,14 @@ export const GET: RequestHandler = async ({ url }) => {
 		const seriesQuery = await db.execute(sql`
       WITH series AS (
         SELECT generate_series(
-          DATE_TRUNC(${truncateFormat}, ${startDate}::timestamp),
-          DATE_TRUNC(${truncateFormat}, ${endDate}::timestamp),
+          DATE_TRUNC(${truncateFormat}, ${startDate}::timestamp AT TIME ZONE 'UTC' AT TIME ZONE ${timezone}),
+          DATE_TRUNC(${truncateFormat}, ${endDate}::timestamp AT TIME ZONE 'UTC' AT TIME ZONE ${timezone}),
           ${intervalUnit}::interval
         ) AS time_point
       ),
       counts AS (
         SELECT 
-          DATE_TRUNC(${truncateFormat}, e.timestamp) AS grouped_time,
+          DATE_TRUNC(${truncateFormat}, e.timestamp AT TIME ZONE 'UTC' AT TIME ZONE ${timezone}) AS grouped_time,
           COUNT(*) AS error_count
         FROM 
           "errors" AS e
@@ -74,7 +75,7 @@ export const GET: RequestHandler = async ({ url }) => {
           grouped_time
       )
       SELECT 
-        to_char(series.time_point AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS timestamp,
+        to_char(series.time_point AT TIME ZONE ${timezone}, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS timestamp,
         COALESCE(counts.error_count, 0) AS count
       FROM 
         series
@@ -91,7 +92,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 		return json({
 			data: results,
-			meta: { startDate, endDate, groupBy },
+			meta: { startDate, endDate, groupBy, timezone },
 		});
 	} catch (err) {
 		console.error('Error fetching error statistics data:', err);

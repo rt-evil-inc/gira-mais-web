@@ -58,7 +58,8 @@
 		try {
 			const formattedStartDate = interval.start.toDate(getLocalTimeZone()).toISOString();
 			const formattedEndDate = interval.end.add({ days: 1 }).toDate(getLocalTimeZone()).toISOString();
-			const url = `/api/statistics/${endpoint}?start=${formattedStartDate}&end=${formattedEndDate}&groupBy=${groupBy}`;
+			const userTimezone = getLocalTimeZone();
+			const url = `/api/statistics/${endpoint}?start=${formattedStartDate}&end=${formattedEndDate}&groupBy=${groupBy}&timezone=${userTimezone}`;
 
 			const response = await fetch(url);
 			if (!response.ok) {
