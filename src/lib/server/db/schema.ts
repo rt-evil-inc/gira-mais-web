@@ -29,6 +29,7 @@ export const errors = pgTable('errors', {
 export const config = pgTable('config', {
 	id: serial('id').primaryKey(),
 	message: text('message').notNull().default(''),
+	messageEn: text('message_en').notNull().default(''),
 	messageTimestamp: timestamp('messageTimestamp').defaultNow().notNull(),
 	messageShowAlways: text('messageShowAlways').notNull().default('false'),
 });

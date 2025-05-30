@@ -4,6 +4,22 @@ import { config } from '$lib/server/db/schema';
 import type { RequestHandler } from './$types';
 import { eq } from 'drizzle-orm';
 
+export const GET: RequestHandler = async () => {
+	try {
+		const currentConfig = (await db.select().from(config).limit(1))[0];
+
+		return json({
+			message: currentConfig?.message || '',
+			messageEn: currentConfig?.messageEn || '',
+			timestamp: currentConfig?.messageTimestamp,
+			showAlways: currentConfig?.messageShowAlways === 'true',
+		});
+	} catch (err) {
+		console.error('Error retrieving config:', err);
+		throw error(500, { message: 'An unknown error occurred' });
+	}
+};
+
 export const PUT: RequestHandler = async ({ request }) => {
 	try {
 		const body = await request.json();
@@ -15,7 +31,12 @@ export const PUT: RequestHandler = async ({ request }) => {
 		}
 
 		await db.update(config)
-			.set({ message: body.message, messageShowAlways: body.showAlways, messageTimestamp: new Date })
+			.set({
+				message: body.message,
+				messageEn: body.messageEn,
+				messageShowAlways: body.showAlways,
+				messageTimestamp: new Date,
+			})
 			.where(eq(config.id, currentConfig.id));
 
 		return json({

@@ -1,6 +1,6 @@
 - Always use Svelte 5 syntax
 - Always use Tailwind
-- Always use shadcn components when possible (install them if needed using `bun x shadcn-svelte@next add <components>`)
+- Always use shadcn components when possible (install them if needed using `bun x shadcn-svelte@next add <component_list> -y`)
 - Always use bun instead of npm
 - Always use TypeScript
 - Always check for errors when you're done
