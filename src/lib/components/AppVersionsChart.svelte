@@ -4,6 +4,9 @@
 	import { Chart, type ChartDataset } from 'chart.js/auto';
 	import colors from 'tailwindcss/colors';
 	import * as Card from '$lib/components/ui/card';
+	import * as Tabs from '$lib/components/ui/tabs';
+	import * as Label from '$lib/components/ui/label';
+	import { Input } from '$lib/components/ui/input';
 	import { TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, type ChartTypeRegistry } from 'chart.js';
 	import 'chartjs-adapter-date-fns';
 	import { mode } from 'mode-watcher';
@@ -14,7 +17,9 @@
 
 	let { interval, groupBy, title, description } = $props();
 
-	let isSmallInterval = $derived(interval?.start?.add({ days: 1 }) >= interval?.end);
+	// Local state for controls
+	let slidingWindowDays = $state(2);
+	let selectedGroupBy = $state(groupBy);
 	let chartInstance: Chart<keyof ChartTypeRegistry, { x: Date; y: number }[]> | null = null;
 	let chartCanvas = $state<HTMLCanvasElement | null>(null);
 	let loading = $state(true);
@@ -26,7 +31,7 @@
 	let releasesData = $state<{tag_name: string; published_at: string}[] | undefined>(undefined);
 
 	$effect(() => {
-		if (interval?.start && interval?.end && groupBy && releasesData !== undefined) {
+		if (interval?.start && interval?.end && selectedGroupBy && slidingWindowDays && groupBy && releasesData !== undefined) {
 			fetchChartData();
 		}
 	});
@@ -53,7 +58,7 @@
 	}
 
 	async function fetchChartData() {
-		if (!interval?.start || !interval?.end || !groupBy) return;
+		if (!interval?.start || !interval?.end || !selectedGroupBy) return;
 
 		loading = true;
 		error = null;
@@ -62,7 +67,7 @@
 			const formattedStartDate = interval.start.toDate(getLocalTimeZone()).toISOString();
 			const formattedEndDate = interval.end.add({ days: 1 }).toDate(getLocalTimeZone()).toISOString();
 			const userTimezone = getLocalTimeZone();
-			const url = `/api/admin/versions?start=${formattedStartDate}&end=${formattedEndDate}&groupBy=${groupBy}&timezone=${userTimezone}`;
+			const url = `/api/admin/versions?start=${formattedStartDate}&end=${formattedEndDate}&groupBy=${selectedGroupBy}&timezone=${userTimezone}&slidingWindow=${slidingWindowDays}`;
 
 			const response = await fetch(url);
 			if (!response.ok) {
@@ -216,7 +221,7 @@
 						callbacks: {
 							title: tooltipItems => {
 								const date = new Date(tooltipItems[0].parsed.x);
-								if (groupBy === 'hour') {
+								if (selectedGroupBy === 'hour') {
 									return date.toLocaleString('pt-PT', { year: 'numeric', month: 'short', day: '2-digit', hour: 'numeric', minute: '2-digit' }) +
 										' - ' + new Date(tooltipItems[0].parsed.x + 3600000).toLocaleString('pt-PT', { hour: 'numeric', minute: '2-digit' });
 								} else {
@@ -238,7 +243,7 @@
 					x: {
 						type: 'time',
 						time: {
-							unit: isSmallInterval ? 'hour' : 'day',
+							unit: selectedGroupBy === 'hour' ? 'hour' : 'day',
 						},
 						title: {
 							display: true,
@@ -253,7 +258,7 @@
 							},
 							callback: value => {
 								const date = new Date(value);
-								if (isSmallInterval) {
+								if (selectedGroupBy === 'hour') {
 									return date.toLocaleString('pt-PT', { hour: 'numeric', minute: '2-digit' }) + ' - ' + new Date(date.getTime() + 3600000).toLocaleString('pt-PT', { hour: 'numeric', minute: '2-digit' });
 								} else {
 									return date.toLocaleString('pt-PT', { month: 'short', day: 'numeric' });
@@ -306,10 +311,35 @@
 
 <Card.Root class="h-full">
 	<Card.CardHeader>
-		<Card.CardTitle>{title}</Card.CardTitle>
-		<Card.CardDescription>
-			{description}
-		</Card.CardDescription>
+		<div class="flex items-center justify-between">
+			<div>
+				<Card.CardTitle>{title}</Card.CardTitle>
+				<Card.CardDescription>
+					{description}
+				</Card.CardDescription>
+			</div>
+			<div class="flex gap-4 items-center">
+				<div class="flex flex-col gap-1">
+					<Label.Root class="text-xs">Agrupamento</Label.Root>
+					<Tabs.Root value={selectedGroupBy} onValueChange={value => { selectedGroupBy = value; }}>
+						<Tabs.TabsList class="h-8">
+							<Tabs.TabsTrigger value="hour" class="text-xs px-2">Por Hora</Tabs.TabsTrigger>
+							<Tabs.TabsTrigger value="day" class="text-xs px-2">Por Dia</Tabs.TabsTrigger>
+						</Tabs.TabsList>
+					</Tabs.Root>
+				</div>
+				<div class="flex flex-col gap-1">
+					<Label.Root class="text-xs">Janela (dias)</Label.Root>
+					<Input
+						type="number"
+						min="1"
+						max="365"
+						bind:value={slidingWindowDays}
+						class="h-8 w-16 text-xs"
+					/>
+				</div>
+			</div>
+		</div>
 	</Card.CardHeader>
 
 	<Card.CardContent>

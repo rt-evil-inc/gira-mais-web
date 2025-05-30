@@ -21,6 +21,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	}
 	const groupBy = url.searchParams.get('groupBy') || 'hour'; // hour, day
 	const timezone = url.searchParams.get('timezone') || 'UTC';
+	const slidingWindow = parseInt(url.searchParams.get('slidingWindow') || '2'); // days
 
 	try {
 		// For hour or day grouping
@@ -34,6 +35,9 @@ export const GET: RequestHandler = async ({ url }) => {
 			truncateFormat = 'day';
 			intervalUnit = '1 day';
 		}
+
+		// Create the sliding window interval string
+		const slidingWindowInterval = `${slidingWindow} days`;
 
 		// Generate series of timestamps and get the last viewed version per device at each time point
 		const seriesQuery = await db.execute(sql`
@@ -55,8 +59,10 @@ export const GET: RequestHandler = async ({ url }) => {
 				LEFT JOIN "usage" AS u ON u.timestamp <= series.time_point
 					AND u.timestamp >= ${startDate}
 					AND u.app_version IS NOT NULL
+					-- Only include devices seen within the last 7 days from the current time point
+					AND u.timestamp >= series.time_point - INTERVAL '7 days'
 				WHERE u.device_id IS NOT NULL
-					AND u.timestamp >= series.time_point - INTERVAL '2 days'
+					AND u.timestamp >= series.time_point - ${slidingWindowInterval}::interval
 				ORDER BY series.time_point, u.device_id, u.timestamp DESC
 			),
 			version_counts AS (
@@ -126,6 +132,7 @@ export const GET: RequestHandler = async ({ url }) => {
 				endDate,
 				groupBy,
 				timezone,
+				slidingWindow,
 				appVersions: Array.from(appVersions).sort(),
 			},
 		});
