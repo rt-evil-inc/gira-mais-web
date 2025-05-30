@@ -22,6 +22,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	const groupBy = url.searchParams.get('groupBy') || 'hour'; // hour, day
 	const timezone = url.searchParams.get('timezone') || 'UTC';
 	const slidingWindow = parseInt(url.searchParams.get('slidingWindow') || '2'); // days
+	const platform = url.searchParams.get('platform'); // android, ios, web, or null for all
 
 	try {
 		// For hour or day grouping
@@ -59,6 +60,7 @@ export const GET: RequestHandler = async ({ url }) => {
 				LEFT JOIN "usage" AS u ON u.timestamp <= series.time_point
 					AND u.timestamp >= ${startDate}
 					AND u.app_version IS NOT NULL
+					${platform ? sql`AND u.os = ${platform}` : sql``}
 					-- Only include devices seen within the last 7 days from the current time point
 					AND u.timestamp >= series.time_point - INTERVAL '7 days'
 				WHERE u.device_id IS NOT NULL
@@ -133,6 +135,7 @@ export const GET: RequestHandler = async ({ url }) => {
 				groupBy,
 				timezone,
 				slidingWindow,
+				platform,
 				appVersions: Array.from(appVersions).sort(),
 			},
 		});

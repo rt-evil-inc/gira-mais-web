@@ -20,6 +20,7 @@
 	// Local state for controls
 	let slidingWindowDays = $state(2);
 	let selectedGroupBy = $state(groupBy);
+	let selectedPlatform = $state<string | null>(null);
 	let chartInstance: Chart<keyof ChartTypeRegistry, { x: Date; y: number }[]> | null = null;
 	let chartCanvas = $state<HTMLCanvasElement | null>(null);
 	let loading = $state(true);
@@ -67,7 +68,11 @@
 			const formattedStartDate = interval.start.toDate(getLocalTimeZone()).toISOString();
 			const formattedEndDate = interval.end.add({ days: 1 }).toDate(getLocalTimeZone()).toISOString();
 			const userTimezone = getLocalTimeZone();
-			const url = `/api/admin/versions?start=${formattedStartDate}&end=${formattedEndDate}&groupBy=${selectedGroupBy}&timezone=${userTimezone}&slidingWindow=${slidingWindowDays}`;
+			let url = `/api/admin/versions?start=${formattedStartDate}&end=${formattedEndDate}&groupBy=${selectedGroupBy}&timezone=${userTimezone}&slidingWindow=${slidingWindowDays}`;
+
+			if (selectedPlatform) {
+				url += `&platform=${selectedPlatform}`;
+			}
 
 			const response = await fetch(url);
 			if (!response.ok) {
@@ -337,6 +342,17 @@
 						bind:value={slidingWindowDays}
 						class="h-8 w-16 text-xs"
 					/>
+				</div>
+				<div class="flex flex-col gap-1">
+					<Label.Root class="text-xs">Plataforma</Label.Root>
+					<Tabs.Root value={selectedPlatform || 'all'} onValueChange={value => { selectedPlatform = value === 'all' ? null : value; }}>
+						<Tabs.TabsList class="h-8">
+							<Tabs.TabsTrigger value="all" class="text-xs px-2">Todas</Tabs.TabsTrigger>
+							<Tabs.TabsTrigger value="android" class="text-xs px-2">Android</Tabs.TabsTrigger>
+							<Tabs.TabsTrigger value="ios" class="text-xs px-2">iOS</Tabs.TabsTrigger>
+							<Tabs.TabsTrigger value="web" class="text-xs px-2">Web</Tabs.TabsTrigger>
+						</Tabs.TabsList>
+					</Tabs.Root>
 				</div>
 			</div>
 		</div>
