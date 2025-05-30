@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { getLocalTimeZone } from '@internationalized/date';
 	import { Chart, type ChartDataset } from 'chart.js/auto';
+	import colors from 'tailwindcss/colors';
 	import * as Card from '$lib/components/ui/card';
 	import { TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, type ChartTypeRegistry } from 'chart.js';
 	import 'chartjs-adapter-date-fns';
@@ -69,18 +70,25 @@
 
 		const style = getComputedStyle(document.body);
 
-		// Color palette for different app versions
-		const colors = [
-			'--primary',
-			'--secondary-foreground',
-			'--destructive',
-			'--muted-foreground',
-			'--accent-foreground',
-			'--border',
+		const saturation = 300;
+		// Primary Tailwind color palette for different app versions
+		const tailwindColors = [
+			colors.red[saturation],
+			colors.yellow[saturation],
+			colors.lime[saturation],
+			colors.emerald[saturation],
+			colors.teal[saturation],
+			colors.cyan[saturation],
+			colors.sky[saturation],
+			colors.blue[saturation],
+			colors.indigo[saturation],
+			colors.purple[saturation],
+			colors.pink[saturation],
+			colors.rose[saturation],
 		];
 
 		const datasets: ChartDataset<'line', { x: Date; y: number }[]>[] = chartData.map((versionData, index) => {
-			const colorProperty = colors[index % colors.length];
+			const color = tailwindColors[index % tailwindColors.length];
 			const data = versionData.data.map(point => ({
 				x: new Date(point.timestamp),
 				y: point.count,
@@ -89,8 +97,8 @@
 			return {
 				label: `v${versionData.label}`,
 				data: data,
-				backgroundColor: `hsl(${style.getPropertyValue(colorProperty)} / 0.7)`,
-				borderColor: `hsl(${style.getPropertyValue(colorProperty)})`,
+				backgroundColor: `${color}B3`, // 70% opacity (B3 in hex)
+				borderColor: color,
 				borderWidth: 1,
 				tension: 0.4,
 				fill: true,
