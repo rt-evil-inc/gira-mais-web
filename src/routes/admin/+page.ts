@@ -9,7 +9,17 @@ export const load: PageLoad = async ({ fetch }) => {
 
 	const tokenSources = await tokenSourcesResponse.json();
 	const tokenStats = await tokenStatsResponse.json();
-	const errorData = await errorDataResponse.json();
+	const errorData:{
+    errorCount: number;
+    errors: {
+        id: number;
+        deviceId: string;
+        timestamp: string;
+        errorCode: string;
+        errorMessage: string | null;
+        userAgent: string | null;
+    }[];
+} = await errorDataResponse.json();
 
 	return {
 		tokenSources: tokenSources.tokenSources,

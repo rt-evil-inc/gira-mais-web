@@ -157,7 +157,6 @@
 				}
 			});
 		}
-		console.log('Annotations:', annotations);
 
 		// Create a new chart with time axis
 		chartInstance = new Chart(chartCanvas, {

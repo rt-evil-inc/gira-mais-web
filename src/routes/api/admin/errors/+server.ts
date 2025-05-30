@@ -10,13 +10,13 @@ import type { RequestHandler } from './$types';
 export const GET: RequestHandler = async () => {
 	try {
 		const now = new Date;
-		const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+		const threeDaysAgo = new Date(now.getTime() - 72 * 60 * 60 * 1000);
 
 		// Get count of errors in last 24 hours
 		const errorCountResult = await db.select({
 			count: sql<number>`count(*)`,
 		}).from(errors)
-			.where(gte(errors.timestamp, twentyFourHoursAgo));
+			.where(gte(errors.timestamp, threeDaysAgo));
 
 		const errorCount = Number(errorCountResult[0]?.count || 0);
 
@@ -27,8 +27,9 @@ export const GET: RequestHandler = async () => {
 			timestamp: errors.timestamp,
 			errorCode: errors.errorCode,
 			errorMessage: errors.errorMessage,
+			userAgent: errors.userAgent,
 		}).from(errors)
-			.where(gte(errors.timestamp, twentyFourHoursAgo))
+			.where(gte(errors.timestamp, threeDaysAgo))
 			.orderBy(desc(errors.timestamp))
 			.limit(50);
 

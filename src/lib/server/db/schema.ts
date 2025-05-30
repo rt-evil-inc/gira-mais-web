@@ -23,6 +23,7 @@ export const errors = pgTable('errors', {
 	timestamp: timestamp('timestamp').defaultNow().notNull(),
 	errorCode: varchar('error_code', { length: 64 }).notNull(),
 	errorMessage: text('error_message'),
+	userAgent: varchar('user_agent', { length: 512 }),
 });
 
 export const config = pgTable('config', {
