@@ -16,6 +16,7 @@
 		timestamp: string;
 		errorCode: string;
 		errorMessage: string | null;
+		userAgent: string | null;
 	}
 
 	interface ErrorData {
@@ -70,7 +71,7 @@
 			</div>
 			<div class="flex items-center gap-2">
 				<Badge variant="outline" class="text-lg px-3 py-1">
-					{errorData.errorCount} nas últimas 24h
+					{errorData.errorCount} nas últimas 72h
 				</Badge>
 				<Button
 					variant="outline"
@@ -103,7 +104,7 @@
 			{#if errorData.errorCount === 0}
 				<div class="text-center py-8 text-muted-foreground">
 					<AlertTriangle class="h-12 w-12 mx-auto mb-4 text-green-500" />
-					<p class="text-lg font-medium text-green-600">Nenhum erro nas últimas 24 horas!</p>
+					<p class="text-lg font-medium text-green-600">Nenhum erro nas últimas 72 horas!</p>
 					<p class="text-sm">Sistema a funcionar sem erros</p>
 				</div>
 			{:else}
@@ -137,8 +138,16 @@
 												</Badge>
 												<div class="flex items-center gap-1 text-xs text-muted-foreground">
 													<Smartphone class="h-3 w-3" />
-													{errorItem.deviceId}
+													<span title={errorItem.deviceId} class="cursor-help font-mono">
+														{errorItem.deviceId.length > 8 ?
+															`${errorItem.deviceId.slice(0, 8)}...` : errorItem.deviceId}
+													</span>
 												</div>
+												{#if !errorItem.userAgent}
+													<Badge variant="secondary" class="text-xs bg-muted text-muted-foreground">
+														Sem UA
+													</Badge>
+												{/if}
 											</div>
 											{#if errorItem.errorMessage}
 												<p class="text-sm text-foreground break-words">

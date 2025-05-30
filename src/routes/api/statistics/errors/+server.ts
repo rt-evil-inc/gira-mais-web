@@ -21,6 +21,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			deviceId: body.deviceId,
 			errorCode: body.errorCode,
 			errorMessage: body.errorMessage,
+			userAgent: request.headers.get('user-agent') || null,
 		});
 
 		// Return success response
