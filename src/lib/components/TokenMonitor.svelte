@@ -149,21 +149,6 @@
 		</div>
 	</CardHeader>
 	<CardContent>
-		<!-- Search and Filter -->
-		<div class="mb-4 flex items-center gap-4">
-			<div class="relative flex-1">
-				<Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-				<Input
-					bind:value={searchTerm}
-					placeholder="Buscar por ID do telefone..."
-					class="pl-9"
-				/>
-			</div>
-			<Badge variant="outline">
-				{filteredTokenSources.length} fonte{ filteredTokenSources.length !== 1 ? 's' : ''} de tokens
-			</Badge>
-		</div>
-
 		<!-- Token Statistics Overview -->
 		<div class="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
 			<div class="bg-card border rounded-lg p-3">
@@ -189,6 +174,21 @@
 			<ContinuousChart endpoint="admin/tokens" colorProperty="--primary" {interval} tension={0.0}
 				title="Tokens Disponíveis"
 			/>
+		</div>
+
+		<!-- Search and Filter -->
+		<div class="mb-4 flex items-center gap-4">
+			<div class="relative flex-1">
+				<Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+				<Input
+					bind:value={searchTerm}
+					placeholder="Procurar por ID do telefone..."
+					class="pl-9"
+				/>
+			</div>
+			<Badge variant="outline">
+				{filteredTokenSources.length} fonte{ filteredTokenSources.length !== 1 ? 's' : ''} de tokens
+			</Badge>
 		</div>
 
 		<!-- Token Source List -->

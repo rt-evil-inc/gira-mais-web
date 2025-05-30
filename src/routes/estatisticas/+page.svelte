@@ -5,6 +5,7 @@
 	import { getLocalTimeZone, today } from '@internationalized/date';
 	import LightSwitch from '$lib/components/LightSwitch.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
 
 	let interval = $state({
 		start: today(getLocalTimeZone()).add({ days: -7 }),
@@ -18,6 +19,7 @@
 </svelte:head>
 
 <div class="absolute right-0 top-0 m-4 flex items-center gap-2">
+	<Button variant="ghost" size="sm" href="/admin">Admin</Button>
 	<LightSwitch />
 </div>
 
