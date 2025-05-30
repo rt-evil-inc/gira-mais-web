@@ -56,7 +56,7 @@ export const GET: RequestHandler = async ({ url }) => {
 					AND u.timestamp >= ${startDate}
 					AND u.app_version IS NOT NULL
 				WHERE u.device_id IS NOT NULL
-					AND u.timestamp >= series.time_point - INTERVAL '7 days'
+					AND u.timestamp >= series.time_point - INTERVAL '2 days'
 				ORDER BY series.time_point, u.device_id, u.timestamp DESC
 			),
 			version_counts AS (
