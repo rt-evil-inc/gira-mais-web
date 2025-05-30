@@ -143,9 +143,9 @@
 															`${errorItem.deviceId.slice(0, 8)}...` : errorItem.deviceId}
 													</span>
 												</div>
-												{#if !errorItem.userAgent}
+												{#if errorItem.userAgent}
 													<Badge variant="secondary" class="text-xs bg-muted text-muted-foreground">
-														Sem UA
+														{errorItem.userAgent.replace('Gira+/', '')}
 													</Badge>
 												{/if}
 											</div>
