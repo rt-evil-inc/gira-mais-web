@@ -3,6 +3,7 @@
 	import { ChartLine } from 'lucide-svelte';
 	import TokenMonitor from '$lib/components/TokenMonitor.svelte';
 	import ErrorDashboard from '$lib/components/ErrorDashboard.svelte';
+	import AppVersionsChart from '$lib/components/AppVersionsChart.svelte';
 	import { getLocalTimeZone, today } from '@internationalized/date';
 	import type { PageProps } from './$types';
 	import LightSwitch from '$lib/components/LightSwitch.svelte';
@@ -41,5 +42,15 @@
 	<!-- Statistics Charts -->
 	<div class="mt-4">
 		<ErrorDashboard errorData={data.errorData} />
+	</div>
+
+	<!-- App Versions Chart -->
+	<div class="mt-4">
+		<AppVersionsChart
+			{interval}
+			groupBy="hour"
+			title="Versões da App"
+			description="Número de dispositivos únicos por versão da aplicação ao longo do tempo"
+		/>
 	</div>
 </div>

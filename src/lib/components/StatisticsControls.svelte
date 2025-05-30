@@ -32,11 +32,9 @@
 <div class="flex flex-col items-center justify-between sm:flex-row gap-4 mt-2">
 	<div class="flex flex-wrap gap-2">
 		<Popover.Root>
-			<Popover.PopoverTrigger>
-				<Button variant="outline" size="sm" class="ml-auto">
-					<CalendarIcon class="mr-2 h-4 w-4" />
-					<span class="w-46">{interval.start?.toString()} - {interval.end?.toString()}</span>
-				</Button>
+			<Popover.PopoverTrigger class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3 py-1 ml-auto">
+				<CalendarIcon class="mr-2 h-4 w-4" />
+				<span class="w-46">{interval.start?.toString()} - {interval.end?.toString()}</span>
 			</Popover.PopoverTrigger>
 			<Popover.PopoverContent class="w-auto p-0" align="start">
 				<RangeCalendar bind:value={interval} preventDeselect maxValue={today(getLocalTimeZone())} />
