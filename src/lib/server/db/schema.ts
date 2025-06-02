@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, varchar, integer } from 'drizzle-orm/pg-core';
 
 export const usage = pgTable('usage', {
 	id: serial('id').primaryKey(),
@@ -43,4 +43,12 @@ export const integrityTokens = pgTable('integrity_tokens', {
 	assignedTo: varchar('assigned_to', { length: 128 }).default(''),
 	assignedAt: timestamp('assigned_at'),
 	userAgent: varchar('user_agent', { length: 512 }),
+});
+
+export const bikeRatings = pgTable('bike_ratings', {
+	id: serial('id').primaryKey(),
+	deviceId: varchar('device_id', { length: 64 }).notNull(),
+	timestamp: timestamp('timestamp').defaultNow().notNull(),
+	bikeSerial: varchar('bike_serial', { length: 32 }).notNull(),
+	rating: integer('rating').notNull(),
 });
