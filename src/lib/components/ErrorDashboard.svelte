@@ -2,7 +2,9 @@
 	import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { AlertTriangle, RefreshCw, Smartphone, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-svelte';
+	import { Checkbox } from '$lib/components/ui/checkbox';
+	import { Popover, PopoverContent, PopoverTrigger } from '$lib/components/ui/popover';
+	import { AlertTriangle, RefreshCw, Smartphone, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Filter, X } from 'lucide-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import { pt } from 'date-fns/locale';
 	import { invalidate } from '$app/navigation';
@@ -42,11 +44,49 @@
 	let currentPage = $state(1);
 	const errorsPerPage = 5;
 
-	// Computed values for pagination
-	const totalPages = $derived(Math.ceil(errorData.errors.length / errorsPerPage));
+	// State for filtering
+	let ignoreGiraApiErrors = $state(false);
+	let selectedVersions = $state<string[]>([]);
+
+	// Get unique app versions from errors
+	const availableVersions = $derived(() => {
+		const versions = new Set<string>;
+		errorData.errors.forEach(error => {
+			if (error.userAgent) {
+				const version = error.userAgent.replace('Gira+/', '');
+				if (version && version !== error.userAgent) {
+					versions.add(version);
+				}
+			}
+		});
+		return Array.from(versions).sort();
+	});
+
+	// Filter errors based on current filters
+	const filteredErrors = $derived(() => {
+		return errorData.errors.filter(error => {
+			// Filter out gira_api_error if checkbox is checked
+			if (ignoreGiraApiErrors && error.errorCode === 'gira_api_error') {
+				return false;
+			}
+
+			// Filter by selected versions (if any are selected)
+			if (selectedVersions.length > 0 && error.userAgent) {
+				const version = error.userAgent.replace('Gira+/', '');
+				if (!selectedVersions.includes(version)) {
+					return false;
+				}
+			}
+
+			return true;
+		});
+	});
+
+	// Update pagination to use filtered errors
+	const totalPages = $derived(Math.ceil(filteredErrors().length / errorsPerPage));
 	const startIndex = $derived((currentPage - 1) * errorsPerPage);
 	const endIndex = $derived(startIndex + errorsPerPage);
-	const paginatedErrors = $derived(errorData.errors.slice(startIndex, endIndex));
+	const paginatedErrors = $derived(filteredErrors().slice(startIndex, endIndex));
 
 	function goToPage(page: number) {
 		currentPage = Math.max(1, Math.min(page, totalPages));
@@ -54,6 +94,26 @@
 
 	function toggleErrorList() {
 		isErrorListCollapsed = !isErrorListCollapsed;
+	}
+
+	function toggleVersionSelection(version: string) {
+		if (selectedVersions.includes(version)) {
+			selectedVersions = selectedVersions.filter(v => v !== version);
+		} else {
+			selectedVersions = [...selectedVersions, version];
+		}
+		// Reset to first page when filters change
+		currentPage = 1;
+	}
+
+	function clearVersionFilters() {
+		selectedVersions = [];
+		currentPage = 1;
+	}
+
+	function toggleIgnoreGiraApiErrors() {
+		ignoreGiraApiErrors = !ignoreGiraApiErrors;
+		currentPage = 1;
 	}
 </script>
 
@@ -99,6 +159,121 @@
 			/>
 		</div>
 
+		<!-- Filters Section -->
+		<div class="border rounded-lg p-4 bg-muted/30">
+			<div class="flex items-center gap-2 mb-3">
+				<Filter class="h-4 w-4" />
+				<h4 class="text-sm font-medium">Filtros</h4>
+			</div>
+
+			<div class="flex flex-col sm:flex-row gap-4">
+				<!-- Ignore Gira API Errors Checkbox -->
+				<div class="flex items-center space-x-2">
+					<Checkbox
+						id="ignore-gira-api"
+						checked={ignoreGiraApiErrors}
+						onCheckedChange={toggleIgnoreGiraApiErrors}
+					/>
+					<label
+						for="ignore-gira-api"
+						class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+					>
+						Ignorar erros gira_api_error
+					</label>
+				</div>
+
+				<!-- App Version Multi-Select -->
+				<div class="flex items-center gap-2">
+					<span class="text-sm font-medium">Versões da app:</span>
+					<Popover>
+						<PopoverTrigger
+							class="inline-flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-w-[200px] hover:bg-accent hover:text-accent-foreground"
+						>
+							{#if selectedVersions.length === 0}
+								Todas as versões
+							{:else if selectedVersions.length === 1}
+								{selectedVersions[0]}
+							{:else}
+								{selectedVersions.length} versões selecionadas
+							{/if}
+							<ChevronDown class="ml-2 h-4 w-4" />
+						</PopoverTrigger>
+						<PopoverContent class="w-[300px] p-3">
+							<div class="space-y-2">
+								<div class="flex items-center justify-between">
+									<h5 class="text-sm font-medium">Versões da app</h5>
+									{#if selectedVersions.length > 0}
+										<Button
+											variant="ghost"
+											size="sm"
+											onclick={clearVersionFilters}
+											class="h-auto p-1 text-xs"
+										>
+											<X class="h-3 w-3 mr-1" />
+											Limpar
+										</Button>
+									{/if}
+								</div>
+
+								<div class="max-h-48 overflow-y-auto space-y-2">
+									{#each availableVersions() as version}
+										<div class="flex items-center space-x-2">
+											<Checkbox
+												id="version-{version}"
+												checked={selectedVersions.includes(version)}
+												onCheckedChange={() => toggleVersionSelection(version)}
+											/>
+											<label
+												for="version-{version}"
+												class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+											>
+												{version}
+											</label>
+										</div>
+									{/each}
+
+									{#if availableVersions().length === 0}
+										<p class="text-sm text-muted-foreground">Nenhuma versão encontrada</p>
+									{/if}
+								</div>
+							</div>
+						</PopoverContent>
+					</Popover>
+				</div>
+			</div>
+
+			<!-- Active Filters Summary -->
+			{#if ignoreGiraApiErrors || selectedVersions.length > 0}
+				<div class="flex items-center gap-2 mt-3 pt-3 border-t">
+					<span class="text-xs text-muted-foreground">Filtros ativos:</span>
+					<div class="flex flex-wrap gap-1">
+						{#if ignoreGiraApiErrors}
+							<Badge variant="secondary" class="text-xs">
+								ignorar gira_api_error
+								<button
+									class="ml-1 hover:bg-muted rounded-full"
+									onclick={toggleIgnoreGiraApiErrors}
+								>
+									<X class="h-3 w-3" />
+								</button>
+							</Badge>
+						{/if}
+						{#each selectedVersions as version}
+							<Badge variant="secondary" class="text-xs">
+								{version}
+								<button
+									class="ml-1 hover:bg-muted rounded-full"
+									onclick={() => toggleVersionSelection(version)}
+								>
+									<X class="h-3 w-3" />
+								</button>
+							</Badge>
+						{/each}
+					</div>
+				</div>
+			{/if}
+		</div>
+
 		<!-- Error List Section -->
 		<div class="border-t pt-6">
 			{#if errorData.errorCount === 0}
@@ -122,7 +297,7 @@
 							{/if}
 						</div>
 						<p class="text-sm text-muted-foreground">
-							{errorData.errors.length} erros mais recentes (de {errorData.errorCount} total)
+							{filteredErrors().length} erros exibidos (de {errorData.errors.length} total)
 						</p>
 					</button>
 
@@ -170,7 +345,7 @@
 						{#if totalPages > 1}
 							<div class="flex items-center justify-between pt-4 border-t">
 								<div class="text-sm text-muted-foreground">
-									Página {currentPage} de {totalPages} ({errorData.errors.length} erros)
+									Página {currentPage} de {totalPages} ({filteredErrors().length} erros filtrados)
 								</div>
 								<div class="flex items-center gap-2">
 									<Button
