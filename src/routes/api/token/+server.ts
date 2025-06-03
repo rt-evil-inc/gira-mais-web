@@ -9,6 +9,11 @@ export const GET: RequestHandler = async event => {
 	// TODO: rate limiting
 
 	try {
+		// Reject requests from default user agents
+		if (event.request.headers.get('user-agent')?.startsWith('Mozilla/')) {
+			throw error(400, 'Hello pls identify your application thx <3');
+		}
+
 		// Get user ID from request headers
 		const userId = event.request.headers.get('x-user-id');
 		if (!userId) {
