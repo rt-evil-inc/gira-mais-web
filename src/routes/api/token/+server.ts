@@ -13,7 +13,7 @@ export const GET: RequestHandler = async event => {
 
 		// Reject requests from default user agents
 		if (userAgent?.startsWith('Mozilla/') || userAgent?.startsWith('Gira/')) {
-			throw error(400, 'Hello pls identify your application thx <3');
+			throw error(400, 'Hello pls identify your application in the user agent header thx <3');
 		}
 
 		// Get user ID from request headers
