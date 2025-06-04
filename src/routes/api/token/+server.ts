@@ -9,8 +9,10 @@ export const GET: RequestHandler = async event => {
 	// TODO: rate limiting
 
 	try {
+		const userAgent = event.request.headers.get('user-agent');
+
 		// Reject requests from default user agents
-		if (event.request.headers.get('user-agent')?.startsWith('Mozilla/')) {
+		if (userAgent?.startsWith('Mozilla/') || userAgent?.startsWith('Gira/')) {
 			throw error(400, 'Hello pls identify your application thx <3');
 		}
 
@@ -52,7 +54,7 @@ export const GET: RequestHandler = async event => {
 			.set({
 				assignedTo: userId,
 				assignedAt: new Date,
-				userAgent: event.request.headers.get('user-agent') || '',
+				userAgent: userAgent || '',
 			})
 			.where(eq(integrityTokens.id, availableTokens[0].id));
 
