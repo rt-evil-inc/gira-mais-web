@@ -22,12 +22,15 @@ export const GET: RequestHandler = async event => {
 			throw error(400, 'Missing x-user-id header');
 		}
 
+		// Calculate minimum expiration time (5 minutes from now)
+		const minExpirationTime = new Date(Date.now() + 5 * 60 * 1000);
+
 		// First, check if this user already has an assigned token
 		const existingTokens = await db.select()
 			.from(integrityTokens)
 			.where(and(
 				eq(integrityTokens.assignedTo, userId),
-				gt(integrityTokens.expiresAt, new Date),
+				gt(integrityTokens.expiresAt, minExpirationTime),
 			));
 
 		if (existingTokens.length > 0) {
@@ -40,7 +43,7 @@ export const GET: RequestHandler = async event => {
 			.from(integrityTokens)
 			.where(and(
 				eq(integrityTokens.assignedTo, ''),
-				gt(integrityTokens.expiresAt, new Date),
+				gt(integrityTokens.expiresAt, minExpirationTime),
 			))
 			.orderBy(integrityTokens.expiresAt)
 			.limit(1);
