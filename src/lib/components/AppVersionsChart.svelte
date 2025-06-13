@@ -18,7 +18,7 @@
 	let { interval, groupBy, title, description } = $props();
 
 	// Local state for controls
-	let slidingWindowDays = $state(2);
+	let slidingWindowDays = $state(7);
 	let selectedGroupBy = $state(groupBy);
 	let selectedPlatform = $state<string | null>(null);
 	let chartInstance: Chart<keyof ChartTypeRegistry, { x: Date; y: number }[]> | null = null;

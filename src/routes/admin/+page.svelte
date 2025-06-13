@@ -47,8 +47,8 @@
 	<!-- App Versions Chart -->
 	<div class="mt-4">
 		<AppVersionsChart
-			{interval}
-			groupBy="hour"
+			interval={{ start: today(getLocalTimeZone()).add({ months: -1 }), end: today(getLocalTimeZone()) }}
+			groupBy="day"
 			title="Versões da App"
 			description="Número de dispositivos únicos por versão da aplicação ao longo do tempo"
 		/>

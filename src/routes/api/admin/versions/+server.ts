@@ -58,13 +58,10 @@ export const GET: RequestHandler = async ({ url }) => {
 				FROM 
 					series
 				LEFT JOIN "usage" AS u ON u.timestamp <= series.time_point
-					AND u.timestamp >= ${startDate}
 					AND u.app_version IS NOT NULL
 					${platform ? sql`AND u.os = ${platform}` : sql``}
-					-- Only include devices seen within the last 7 days from the current time point
-					AND u.timestamp >= series.time_point - INTERVAL '7 days'
-				WHERE u.device_id IS NOT NULL
 					AND u.timestamp >= series.time_point - ${slidingWindowInterval}::interval
+				WHERE u.device_id IS NOT NULL
 				ORDER BY series.time_point, u.device_id, u.timestamp DESC
 			),
 			version_counts AS (
