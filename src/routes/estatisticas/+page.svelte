@@ -16,6 +16,17 @@
 
 <svelte:head>
 	<title>Gira+ | Estatísticas</title>
+	<meta name="description" content="Estatísticas de utilização da aplicação Gira+" />
+	<meta property="og:title" content="Gira+ | Estatísticas" />
+	<meta property="og:description" content="Estatísticas de utilização da aplicação Gira+" />
+	<meta property="og:type" content="website" />
+	<meta property="og:image" content="https://gira-mais.app/card.png" />
+	<meta property="og:url" content="https://gira-mais.app/estatisticas" />
+	<meta property="og:site_name" content="Gira+" />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content="Gira+ | Estatísticas" />
+	<meta name="twitter:description" content="Estatísticas de utilização da aplicação Gira+" />
+	<meta name="twitter:image" content="https://gira-mais.app/card.png" />
 </svelte:head>
 
 <div class="absolute right-0 top-0 m-4 flex items-center gap-2">

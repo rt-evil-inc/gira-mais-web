@@ -26,6 +26,17 @@
 
 <svelte:head>
 	<title>Gira+</title>
+	<meta name="description" content="Aplicação não-oficial para o sistema de bicicletas Gira." />
+	<meta property="og:title" content="Gira+" />
+	<meta property="og:description" content="Aplicação não-oficial para o sistema de bicicletas Gira." />
+	<meta property="og:type" content="website" />
+	<meta property="og:image" content="https://gira-mais.app/card.png" />
+	<meta property="og:url" content="https://gira-mais.app" />
+	<meta property="og:site_name" content="Gira+" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Gira+" />
+	<meta name="twitter:description" content="Aplicação não-oficial para o sistema de bicicletas Gira." />
+	<meta name="twitter:image" content="https://gira-mais.app/card.png" />
 </svelte:head>
 
 <div class="min-h-screen bg-background dark text-foreground">
