@@ -17,7 +17,7 @@
 		</header>
 
 		<div class="mt-8 mb-4">
-			Os dados são processados de acordo com o código presente em <a class="underline" href="https://github.com/rt-evil-inc/gira-mais-web">https://github.com/rt-evil-inc/gira-mais-web</a>. Os dados não serão associados à sua identidade e serão usados para gerar gráficos públicos e relatar erros aos desenvolvedores.
+			Os dados são processados de acordo com o código presente em <a class="underline" href="https://github.com/rt-evil-inc/gira-mais">https://github.com/rt-evil-inc/gira-mais</a>. Os dados não serão associados à sua identidade e serão usados para gerar gráficos públicos e relatar erros aos desenvolvedores.
 		</div>
 	</div>
 
