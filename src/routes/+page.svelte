@@ -3,12 +3,13 @@
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '$lib/components/ui/accordion';
 	import { Avatar, AvatarFallback, AvatarImage } from '$lib/components/ui/avatar';
-	import { Github, Navigation, Route, Map, WandSparkles, MoonStar, ExternalLink } from 'lucide-svelte';
+	import { Github, Navigation, Route, Map, WandSparkles, MoonStar, ExternalLink, Star, Heart } from 'lucide-svelte';
 	import * as Carousel from '$lib/components/ui/carousel';
 	import Autoplay from 'embla-carousel-autoplay';
 	import { Badge } from '$lib/components/ui/badge';
 	import Logo from '$lib/components/Logo.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import { onMount } from 'svelte';
 
 	const screenshots = [
 		'/screenshots/screenshot-1.png',
@@ -22,6 +23,134 @@
 		'/screenshots/screenshot-9.png',
 		'/screenshots/screenshot-10.png',
 	];
+
+	// GitHub data state
+	interface GitHubUser {
+		login: string;
+		avatar_url: string;
+		html_url: string;
+		contributions?: number | string;
+	}
+
+	interface Sponsor {
+		handle: string;
+		avatar: string;
+		profile: string;
+		details: GitHubUser;
+	}
+
+	interface RepoStats {
+		stars: number;
+		forks: number;
+	}
+
+	let sponsors = $state<Sponsor[]>([]);
+	let codeContributors = $state<GitHubUser[]>([]);
+	let designContributors = $state<GitHubUser[]>([]);
+	let stargazers = $state<GitHubUser[]>([]);
+	let repoStats = $state<RepoStats>({ stars: 0, forks: 0 });
+	let isLoading = $state(true);
+
+	// Calculate optimal pagination to get recent items from the last page
+	function calculateOptimalPagination(totalItems: number, itemsToShow: number, maxPerPage = 100) {
+		if (totalItems <= itemsToShow) {
+			return { perPage: totalItems, page: 1 };
+		}
+
+		let perPage = maxPerPage; // fallback to max if no optimal value found
+		// Find the smallest per_page value that ensures at least itemsToShow items on the last page
+		for (let testPerPage = itemsToShow; testPerPage <= maxPerPage; testPerPage++) {
+			const remainder = totalItems % testPerPage;
+			if (remainder === 0 || remainder >= itemsToShow) {
+				perPage = testPerPage; // Use the first (smallest) value that works
+				break;
+			}
+		}
+
+		const lastPage = Math.ceil(totalItems / perPage);
+		return { perPage, page: lastPage };
+	}
+
+	// Fetch GitHub data
+	async function fetchGitHubData() {
+		try {
+			// First, get repo stats and contributor count
+			const [repoResponse, contributorsCountResponse] = await Promise.all([
+				fetch('https://api.github.com/repos/rt-evil-inc/gira-mais'),
+				fetch('https://api.github.com/repos/rt-evil-inc/gira-mais/contributors?per_page=1'), // Just to get the total count from headers
+			]);
+
+			let totalStars = 0;
+			let totalContributors = 0;
+
+			if (repoResponse.ok) {
+				const repoData = await repoResponse.json();
+				totalStars = repoData.stargazers_count;
+				repoStats = {
+					stars: totalStars,
+					forks: repoData.forks_count,
+				};
+			}
+
+			// Get total contributors count from the Link header or fallback
+			if (contributorsCountResponse.ok) {
+				const linkHeader = contributorsCountResponse.headers.get('Link');
+				if (linkHeader) {
+					// Parse the last page number from Link header
+					const lastPageMatch = linkHeader.match(/page=(\d+)>; rel="last"/);
+					if (lastPageMatch) {
+						totalContributors = parseInt(lastPageMatch[1]);
+					}
+				}
+
+				// Fallback: if we can't get count from headers, estimate or use a reasonable default
+				if (!totalContributors) {
+					const contributors = await contributorsCountResponse.json();
+					totalContributors = contributors.length || 50; // Fallback estimate
+				}
+			}
+
+			// Calculate optimal pagination for both stargazers and contributors
+			const starsPagination = calculateOptimalPagination(totalStars, 23);
+			const contributorsPagination = calculateOptimalPagination(totalContributors, 12);
+
+			const [contributorsResponse, stargazersResponse, sponsorsResponse] = await Promise.all([
+				fetch(`https://api.github.com/repos/rt-evil-inc/gira-mais/contributors?per_page=${contributorsPagination.perPage}&page=${contributorsPagination.page}`),
+				fetch(`https://api.github.com/repos/rt-evil-inc/gira-mais/stargazers?per_page=${starsPagination.perPage}&page=${starsPagination.page}`),
+				fetch('https://ghs.vercel.app/sponsors/rt-evil-inc'),
+			]);
+
+			if (contributorsResponse.ok) {
+				const githubContributors = await contributorsResponse.json();
+				codeContributors = githubContributors;
+
+				designContributors = [{
+					login: 'Inês Freitas',
+					avatar_url: 'https://media.licdn.com/dms/image/v2/D4D03AQG_7hKq8UJtVA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1683987713410?e=2147483647&v=beta&t=F_ADBYd1z_xD_XND7uD6hzVS3Q7OYO0KgEIKYdslkME',
+					html_url: 'https://pt.linkedin.com/in/ines-t-freitas',
+					contributions: 'Design do logotipo',
+				}];
+			}
+
+			if (stargazersResponse.ok) {
+				const fetchedStargazers = await stargazersResponse.json();
+				stargazers = fetchedStargazers;
+			}
+
+			if (sponsorsResponse.ok) {
+				const sponsorsData = await sponsorsResponse.json();
+				sponsors = sponsorsData.sponsors || [];
+			}
+		} catch (error) {
+			console.error('Error fetching GitHub data:', error);
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	onMount(() => {
+		fetchGitHubData();
+	});
 </script>
 
 <svelte:head>
@@ -48,7 +177,7 @@
 			<!-- <Button variant="ghost" size="sm" href="/blog">Blog</Button> -->
 		</div>
 		<div class="container px-4 mx-auto flex flex-col items-center">
-			<div title="Logotipo da Gira+ desenhado pela Inês Freitas">
+			<div title="Logotipo da Gira+ desenhado por Inês Freitas">
 				<Logo class="h-32 md:h-40 mb-8" />
 			</div>
 			<h1 class="text-4xl md:text-6xl font-bold tracking-tighter mb-4">Gira+</h1>
@@ -76,7 +205,7 @@
 	</section>
 
 	<!-- Features Section -->
-	<section class="py-16 bg-muted/40">
+	<section class="py-16">
 		<div class="container">
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 items-center justify-center">
 				<div class="relative w-screen -ml-8 sm:ml-0 sm:w-full lg:col-span-2 sm:m-0 select-none">
@@ -215,7 +344,7 @@
 	</section>
 
 	<!-- FAQ Section -->
-	<section class="py-16 bg-muted/40">
+	<section class="py-16">
 		<div class="container px-4 mx-auto">
 			<h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Perguntas Frequentes</h2>
 			<div class="max-w-3xl mx-auto">
@@ -286,7 +415,239 @@
 			</div>
 		</div>
 	</section>
-	<Footer />
+
+	<!-- Community Section -->
+	<section class="py-16">
+		<div class="container px-4 mx-auto">
+			{#if isLoading}
+				<div class="flex flex-col xl:flex-row items-stretch justify-center gap-8 xl:gap-12">
+					<!-- Sponsors Skeleton -->
+					<div class="text-center flex flex-col justify-between w-full xl:w-auto">
+						<div class="flex items-center justify-center gap-2 mb-6">
+							<div class="flex items-center gap-3">
+								<div class="w-6 h-6 bg-muted rounded animate-pulse"></div>
+								<div class="w-28 h-6 bg-muted rounded animate-pulse"></div>
+							</div>
+							<div class="w-6 h-4 bg-muted rounded animate-pulse"></div>
+						</div>
+						<div class="flex flex-col items-center justify-center w-full max-w-96 mx-auto grow">
+							<div class="flex flex-wrap items-center justify-center gap-2 mb-6">
+								{#each Array(16) as _}
+									<div class="w-12 h-12 bg-muted rounded-full animate-pulse"></div>
+								{/each}
+							</div>
+							<div class="flex justify-center">
+								<div class="w-20 h-8 bg-muted rounded animate-pulse"></div>
+							</div>
+						</div>
+					</div>
+
+					<div class="w-full max-w-3xl h-px xl:w-px xl:h-auto bg-border flex-shrink-0 xl:self-stretch"></div>
+
+					<!-- Contributors Skeleton -->
+					<div class="text-center flex flex-col justify-between w-full xl:w-auto">
+						<div class="flex items-center justify-center gap-2 mb-6">
+							<div class="flex items-center gap-3">
+								<div class="w-6 h-6 bg-muted rounded animate-pulse"></div>
+								<div class="w-28 h-6 bg-muted rounded animate-pulse"></div>
+							</div>
+							<div class="w-6 h-4 bg-muted rounded animate-pulse"></div>
+						</div>
+						<div class="flex flex-col items-center justify-center w-80 mx-auto grow">
+							<!-- Code Contributors Skeleton -->
+							<div class="mb-6">
+								<div class="flex items-center justify-center mb-3">
+									<div class="w-12 h-4 bg-muted rounded animate-pulse"></div>
+								</div>
+								<div class="flex flex-wrap items-center justify-center gap-2">
+									{#each Array(8) as _}
+										<div class="w-12 h-12 bg-muted rounded-full animate-pulse"></div>
+									{/each}
+								</div>
+							</div>
+							<!-- Design Contributors Skeleton -->
+							<div class="mb-6">
+								<div class="flex items-center justify-center mb-3">
+									<div class="w-12 h-4 bg-muted rounded animate-pulse"></div>
+								</div>
+								<div class="flex flex-wrap items-center justify-center gap-2">
+									{#each Array(2) as _}
+										<div class="w-12 h-12 bg-muted rounded-full animate-pulse"></div>
+									{/each}
+								</div>
+							</div>
+							<div class="flex justify-center">
+								<div class="w-32 h-8 bg-muted rounded animate-pulse"></div>
+							</div>
+						</div>
+					</div>
+
+					<div class="w-full max-w-3xl h-px xl:w-px xl:h-auto bg-border flex-shrink-0 xl:self-stretch"></div>
+
+					<!-- Stargazers Skeleton -->
+					<div class="text-center flex flex-col justify-between w-full xl:w-auto">
+						<div class="flex items-center justify-center gap-2 mb-6">
+							<div class="flex items-center gap-3">
+								<div class="w-6 h-6 bg-muted rounded animate-pulse"></div>
+								<div class="w-16 h-6 bg-muted rounded animate-pulse"></div>
+							</div>
+							<div class="w-8 h-4 bg-muted rounded animate-pulse"></div>
+						</div>
+						<div class="flex flex-col items-center justify-center w-80 mx-auto grow">
+							<div class="flex flex-wrap items-center justify-center gap-2 mb-6">
+								{#each Array(20) as _}
+									<div class="w-12 h-12 bg-muted rounded-full animate-pulse"></div>
+								{/each}
+							</div>
+							<div class="flex justify-center">
+								<div class="w-32 h-8 bg-muted rounded animate-pulse"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			{:else}
+				<div class="flex flex-col xl:flex-row items-center xl:items-stretch justify-center gap-8 xl:gap-12">
+					<!-- Sponsors -->
+					<div class="text-center flex flex-col justify-between w-full xl:w-auto">
+						<div class="flex items-center justify-center gap-2 mb-6">
+							<h3 class="text-xl font-bold flex items-center gap-3">
+								<Heart size={24} class="stroke-[#db61a2]" />
+								Patrocinadores
+							</h3>
+							<Badge variant="secondary" class="text-xs">
+								{sponsors.length}
+							</Badge>
+						</div>
+						<div class="flex flex-col items-center justify-center w-80 mx-auto grow">
+							<div class="flex flex-wrap items-center justify-center gap-2 mb-6">
+								{#each sponsors.slice(0, 23).reverse() as sponsor}
+									<a href={sponsor.profile} target="_blank" title={sponsor.details.name || sponsor.handle} class="relative hover:z-10 transition-transform {sponsors.length > 15 ? '-ml-4 translate-x-2' : ''} hover:scale-110">
+										<Avatar class="h-12 w-12 bg-muted">
+											<AvatarImage src={sponsor.avatar} alt={sponsor.handle} />
+											<AvatarFallback class="bg-muted">{sponsor.handle.charAt(0).toUpperCase()}</AvatarFallback>
+										</Avatar>
+									</a>
+								{/each}
+								{#if sponsors.length > 23}
+									<a href="https://github.com/sponsors/rt-evil-inc" target="_blank" title="Ver todos os patrocinadores" class="relative hover:z-10 transition-transform -ml-4 translate-x-2 hover:scale-110 !no-underline !text-foreground">
+										<Avatar class="h-12 w-12 bg-muted">
+											<AvatarFallback class="bg-muted text-xs">+{sponsors.length - 23}</AvatarFallback>
+										</Avatar>
+									</a>
+								{/if}
+							</div>
+							<Button variant="secondary" href="https://github.com/sponsors/rt-evil-inc" target="_blank">
+								Patrocinar
+								<ExternalLink size={16} />
+							</Button>
+						</div>
+					</div>
+
+					<div class="w-full max-w-3xl h-px xl:w-px xl:h-auto bg-border flex-shrink-0 xl:self-stretch"></div>
+
+					<!-- Contributors -->
+					<div class="text-center flex flex-col justify-between w-full xl:w-auto">
+						<div class="flex items-center justify-center gap-2 mb-6">
+							<h3 class="text-xl font-bold flex items-center gap-3">
+								<Github size={24} />
+								Contribuidores
+							</h3>
+							<Badge variant="secondary" class="text-xs">
+								{codeContributors.length + designContributors.length}
+							</Badge>
+						</div>
+						<div class="flex flex-col items-center justify-center w-80 mx-auto grow">
+
+							<!-- Code Contributors Subsection -->
+							<div class="mb-6">
+								<div class="flex items-center justify-center mb-3">
+									<h4 class="text-sm font-semibold text-muted-foreground">Código</h4>
+								</div>
+								<div class="flex flex-wrap items-center justify-center gap-2">
+									{#each codeContributors.slice(0, 15) as contributor}
+										<a href={contributor.html_url} target="_blank" title="{contributor.login} ({contributor.contributions} {(contributor.contributions === 1 ? 'contribuição' : 'contribuições')})" class="relative hover:z-10 transition-transform {codeContributors.length > 15 ? '-ml-4 translate-x-2' : ''} hover:scale-110">
+											<Avatar class="h-12 w-12 bg-muted">
+												<AvatarImage src={contributor.avatar_url} alt={contributor.login} />
+												<AvatarFallback class="bg-muted text-xs">{contributor.login.charAt(0).toUpperCase()}</AvatarFallback>
+											</Avatar>
+										</a>
+									{/each}
+									{#if codeContributors.length > 15}
+										<a href="https://github.com/rt-evil-inc/gira-mais/graphs/contributors" target="_blank" title="Ver todos os contribuidores de código" class="relative hover:z-10 transition-transform -ml-4 translate-x-2 hover:scale-110 !no-underline !text-foreground">
+											<Avatar class="h-12 w-12 bg-muted">
+												<AvatarFallback class="bg-muted text-xs">+{codeContributors.length - 15}</AvatarFallback>
+											</Avatar>
+										</a>
+									{/if}
+								</div>
+							</div>
+
+							<!-- Design Contributors Subsection -->
+							<div class="mb-6">
+								<div class="flex items-center justify-center mb-3">
+									<h4 class="text-sm font-semibold text-muted-foreground">Design</h4>
+								</div>
+								<div class="flex flex-wrap items-center justify-center gap-2">
+									{#each designContributors as contributor}
+										<a href={contributor.html_url} target="_blank" title="{contributor.login} ({contributor.contributions})" class="relative hover:z-10 transition-transform hover:scale-110">
+											<Avatar class="h-12 w-12 bg-muted">
+												<AvatarImage src={contributor.avatar_url} alt={contributor.login} />
+												<AvatarFallback class="bg-muted text-xs">{contributor.login.charAt(0).toUpperCase()}</AvatarFallback>
+											</Avatar>
+										</a>
+									{/each}
+								</div>
+							</div>
+
+							<Button variant="secondary" href="https://github.com/rt-evil-inc/gira-mais/graphs/contributors" target="_blank">
+								Ver contribuidores
+								<ExternalLink size={16} />
+							</Button>
+						</div>
+					</div>
+
+					<div class="w-full max-w-3xl h-px xl:w-px xl:h-auto bg-border flex-shrink-0 xl:self-stretch"></div>
+
+					<!-- Stargazers -->
+					<div class="text-center flex flex-col justify-between w-full xl:w-auto">
+						<div class="flex items-center justify-center gap-2 mb-6">
+							<h3 class="text-xl font-bold flex items-center gap-3">
+								<Star size={24} class="stroke-[#e3b341]" />
+								Estrelas
+							</h3>
+							<Badge variant="secondary" class="text-xs">
+								{repoStats.stars}
+							</Badge>
+						</div>
+						<div class="flex flex-col items-center justify-center w-80 mx-auto grow">
+							<div class="flex flex-wrap items-center justify-center gap-2 mb-6">
+								{#each stargazers.slice(0, 23).reverse() as stargazer}
+									<a href={stargazer.html_url} target="_blank" title={stargazer.login} class="relative hover:z-10 transition-transform {repoStats.stars > 15 ? '-ml-4 translate-x-2' : ''} hover:scale-110">
+										<Avatar class="h-12 w-12 bg-muted">
+											<AvatarImage src={stargazer.avatar_url} alt={stargazer.login} />
+											<AvatarFallback class="bg-muted">{stargazer.login.charAt(0).toUpperCase()}</AvatarFallback>
+										</Avatar>
+									</a>
+								{/each}
+								{#if repoStats.stars > 23}
+									<a href="https://github.com/rt-evil-inc/gira-mais/stargazers" target="_blank" title="Ver todas as estrelas" class="relative hover:z-10 transition-transform -ml-4 translate-x-2 hover:scale-110 !no-underline !text-foreground">
+										<Avatar class="h-12 w-12 bg-muted">
+											<AvatarFallback class="bg-muted text-xs">+{repoStats.stars - 23}</AvatarFallback>
+										</Avatar>
+									</a>
+								{/if}
+							</div>
+							<Button variant="secondary" href="https://github.com/rt-evil-inc/gira-mais" target="_blank">
+								Deixar uma estrela
+								<ExternalLink size={16} />
+							</Button>
+						</div>
+					</div>
+				</div>
+			{/if}
+		</div>
+	</section>
+	<Footer class="bg-muted/40" />
 </div>
 
 <style lang="postcss">
@@ -301,6 +662,10 @@
 		50% {
 			opacity: 0.7;
 		}
+	}
+
+	section:nth-child(even) {
+		@apply bg-muted/40;
 	}
 
 	a {
