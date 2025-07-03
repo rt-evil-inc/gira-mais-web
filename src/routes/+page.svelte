@@ -126,7 +126,7 @@
 
 				designContributors = [{
 					login: 'Inês Freitas',
-					avatar_url: 'https://media.licdn.com/dms/image/v2/D4D03AQG_7hKq8UJtVA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1683987713410?e=2147483647&v=beta&t=F_ADBYd1z_xD_XND7uD6hzVS3Q7OYO0KgEIKYdslkME',
+					avatar_url: 'https://mir-s3-cdn-cf.behance.net/user/115/29e4031136169129.645f9d7b634e6.png',
 					html_url: 'https://pt.linkedin.com/in/ines-t-freitas',
 					contributions: 'Design do logotipo',
 				}];
