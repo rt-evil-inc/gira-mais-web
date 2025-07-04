@@ -6,12 +6,17 @@
 	import LightSwitch from '$lib/components/LightSwitch.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
+	import { browser } from '$app/environment';
 
 	let interval = $state({
 		start: today(getLocalTimeZone()).add({ days: -7 }),
 		end: today(getLocalTimeZone()),
 	});
 	let groupBy = $state('hour');
+	let admin = $state(false);
+	if (browser) {
+		admin = localStorage.getItem('admin') === 'true';
+	}
 </script>
 
 <svelte:head>
@@ -30,7 +35,9 @@
 </svelte:head>
 
 <div class="absolute right-0 top-0 m-4 flex items-center gap-2">
-	<Button variant="ghost" size="sm" href="/admin">Admin</Button>
+	{#if admin}
+		<Button variant="ghost" size="sm" href="/admin" data-sveltekit-preload-data="tap">Admin</Button>
+	{/if}
 	<LightSwitch />
 </div>
 

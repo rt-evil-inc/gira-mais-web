@@ -495,7 +495,7 @@
 						</div>
 						<div class="flex flex-col items-center justify-center w-80 mx-auto grow">
 							<div class="flex flex-wrap items-center justify-center gap-2 mb-6">
-								{#each Array(20) as _}
+								{#each Array(15) as _}
 									<div class="w-12 h-12 bg-muted rounded-full animate-pulse"></div>
 								{/each}
 							</div>
