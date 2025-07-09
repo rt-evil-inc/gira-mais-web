@@ -45,7 +45,7 @@
 	const errorsPerPage = 5;
 
 	// State for filtering
-	let ignoreGiraApiErrors = $state(false);
+	let selectedErrorCodes = $state<string[]>([]);
 	let selectedVersions = $state<string[]>([]);
 
 	// Get unique app versions from errors
@@ -62,11 +62,29 @@
 		return Array.from(versions).sort();
 	});
 
+	// Get unique error codes from errors
+	const availableErrorCodes = $derived(() => {
+		const errorCodes = new Set<string>;
+		errorData.errors.forEach(error => {
+			if (error.errorCode) {
+				errorCodes.add(error.errorCode);
+			}
+		});
+		return Array.from(errorCodes).sort();
+	});
+
+	$effect(() => {
+		// Pre-select all error codes except for the ignored ones
+		selectedErrorCodes = availableErrorCodes().filter(
+			code => code !== 'gira_api_error' && code !== 'no_tokens_available_error' && code !== 'token_fetch_error',
+		);
+	});
+
 	// Filter errors based on current filters
 	const filteredErrors = $derived(() => {
 		return errorData.errors.filter(error => {
-			// Filter out gira_api_error if checkbox is checked
-			if (ignoreGiraApiErrors && error.errorCode === 'gira_api_error') {
+			// Filter by selected error codes
+			if (selectedErrorCodes.length > 0 && !selectedErrorCodes.includes(error.errorCode)) {
 				return false;
 			}
 
@@ -111,8 +129,17 @@
 		currentPage = 1;
 	}
 
-	function toggleIgnoreGiraApiErrors() {
-		ignoreGiraApiErrors = !ignoreGiraApiErrors;
+	function toggleErrorCodeSelection(errorCode: string) {
+		if (selectedErrorCodes.includes(errorCode)) {
+			selectedErrorCodes = selectedErrorCodes.filter(c => c !== errorCode);
+		} else {
+			selectedErrorCodes = [...selectedErrorCodes, errorCode];
+		}
+		currentPage = 1;
+	}
+
+	function clearErrorCodeFilters() {
+		selectedErrorCodes = [];
 		currentPage = 1;
 	}
 </script>
@@ -146,19 +173,6 @@
 	</CardHeader>
 
 	<CardContent class="space-y-6">
-		<!-- Chart Controls -->
-		<div>
-			<StatisticsControls bind:interval bind:groupBy />
-		</div>
-
-		<!-- Chart Section -->
-		<div>
-			<StatisticsChart endpoint="admin/errors" colorProperty="--warning" {interval} {groupBy}
-				title="Erros"
-				description="Número de erros ao longo do tempo"
-			/>
-		</div>
-
 		<!-- Filters Section -->
 		<div class="border rounded-lg p-4 bg-muted/30">
 			<div class="flex items-center gap-2 mb-3">
@@ -167,19 +181,63 @@
 			</div>
 
 			<div class="flex flex-col sm:flex-row gap-4">
-				<!-- Ignore Gira API Errors Checkbox -->
-				<div class="flex items-center space-x-2">
-					<Checkbox
-						id="ignore-gira-api"
-						checked={ignoreGiraApiErrors}
-						onCheckedChange={toggleIgnoreGiraApiErrors}
-					/>
-					<label
-						for="ignore-gira-api"
-						class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-					>
-						Ignorar erros gira_api_error
-					</label>
+				<!-- Error Code Multi-Select -->
+				<div class="flex items-center gap-2">
+					<span class="text-sm font-medium">Tipos de Erro:</span>
+					<Popover>
+						<PopoverTrigger
+							class={buttonVariants({ variant: 'outline', size: 'sm' })}
+						>
+							{#if selectedErrorCodes.length === 0}
+								Todos os tipos
+							{:else if selectedErrorCodes.length === 1}
+								{selectedErrorCodes[0]}
+							{:else}
+								{selectedErrorCodes.length} tipos selecionados
+							{/if}
+							<ChevronDown class="ml-2 h-4 w-4" />
+						</PopoverTrigger>
+						<PopoverContent class="w-[300px] p-3">
+							<div class="space-y-2">
+								<div class="flex items-center justify-between">
+									<h5 class="text-sm font-medium">Tipos de Erro</h5>
+									{#if selectedErrorCodes.length > 0}
+										<Button
+											variant="ghost"
+											size="sm"
+											onclick={clearErrorCodeFilters}
+											class="h-auto p-1 text-xs"
+										>
+											<X class="h-3 w-3 mr-1" />
+											Limpar
+										</Button>
+									{/if}
+								</div>
+
+								<div class="max-h-48 overflow-y-auto space-y-2">
+									{#each availableErrorCodes() as errorCode}
+										<div class="flex items-center space-x-2">
+											<Checkbox
+												id="error-code-{errorCode}"
+												checked={selectedErrorCodes.includes(errorCode)}
+												onCheckedChange={() => toggleErrorCodeSelection(errorCode)}
+											/>
+											<label
+												for="error-code-{errorCode}"
+												class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+											>
+												{errorCode}
+											</label>
+										</div>
+									{/each}
+
+									{#if availableErrorCodes().length === 0}
+										<p class="text-sm text-muted-foreground">Nenhum tipo de erro encontrado</p>
+									{/if}
+								</div>
+							</div>
+						</PopoverContent>
+					</Popover>
 				</div>
 
 				<!-- App Version Multi-Select -->
@@ -243,21 +301,21 @@
 			</div>
 
 			<!-- Active Filters Summary -->
-			{#if ignoreGiraApiErrors || selectedVersions.length > 0}
+			{#if selectedErrorCodes.length > 0 || selectedVersions.length > 0}
 				<div class="flex items-center gap-2 mt-3 pt-3 border-t">
 					<span class="text-xs text-muted-foreground">Filtros ativos:</span>
 					<div class="flex flex-wrap gap-1">
-						{#if ignoreGiraApiErrors}
+						{#each selectedErrorCodes as errorCode}
 							<Badge variant="secondary" class="text-xs">
-								ignorar gira_api_error
+								{errorCode}
 								<button
 									class="ml-1 hover:bg-muted rounded-full"
-									onclick={toggleIgnoreGiraApiErrors}
+									onclick={() => toggleErrorCodeSelection(errorCode)}
 								>
 									<X class="h-3 w-3" />
 								</button>
 							</Badge>
-						{/if}
+						{/each}
 						{#each selectedVersions as version}
 							<Badge variant="secondary" class="text-xs">
 								{version}
@@ -274,8 +332,23 @@
 			{/if}
 		</div>
 
+		<!-- Chart Controls -->
+		<StatisticsControls bind:interval bind:groupBy />
+
+		<!-- Chart Section -->
+		<div>
+			<StatisticsChart
+				endpoint={`admin/errors?${selectedErrorCodes.map(c => `errorCodes=${c}`).join('&')}&${selectedVersions.map(v => `versions=${v}`).join('&')}`}
+				colorProperty="--warning"
+				{interval}
+				{groupBy}
+				title="Erros"
+				description="Número de erros ao longo do tempo"
+			/>
+		</div>
+
 		<!-- Error List Section -->
-		<div class="border-t pt-6">
+		<div>
 			{#if errorData.errorCount === 0}
 				<div class="text-center py-8 text-muted-foreground">
 					<AlertTriangle class="h-12 w-12 mx-auto mb-4 text-primary" />

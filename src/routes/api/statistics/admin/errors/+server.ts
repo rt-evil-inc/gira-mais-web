@@ -22,8 +22,21 @@ export const GET: RequestHandler = async ({ url }) => {
 	}
 	const groupBy = url.searchParams.get('groupBy') || 'day'; // hour, day, total
 	const timezone = url.searchParams.get('timezone') || 'UTC';
+	const errorCodes = url.searchParams.getAll('errorCodes');
+	const versions = url.searchParams.getAll('versions');
 
 	try {
+		let whereClause = sql`${errors.timestamp} >= ${startDate} AND ${errors.timestamp} < ${endDate}`;
+
+		if (errorCodes.length > 0) {
+			whereClause = sql`${whereClause} AND ${errors.errorCode} IN ${errorCodes}`;
+		}
+
+		if (versions.length > 0) {
+			const versionClauses = versions.map(version => sql`${errors.userAgent} LIKE ${`Gira+/${version}%`}`);
+			whereClause = sql`${whereClause} AND (${sql.join(versionClauses, sql` OR `)})`;
+		}
+
 		if (groupBy === 'total') {
 			// Get total errors in the given time range
 			const totalQuery = await db
@@ -31,9 +44,7 @@ export const GET: RequestHandler = async ({ url }) => {
 					count: sql<number>`COUNT(*)`,
 				})
 				.from(errors)
-				.where(
-					sql`${errors.timestamp} >= ${startDate} AND ${errors.timestamp} < ${endDate}`,
-				);
+				.where(whereClause);
 
 			const totalCount = totalQuery[0]?.count || 0;
 			return json({
@@ -69,9 +80,11 @@ export const GET: RequestHandler = async ({ url }) => {
           COUNT(*) AS error_count
         FROM 
           "errors" AS e
-        WHERE 
+        WHERE
           e.timestamp >= ${startDate} AND e.timestamp < ${endDate}
-        GROUP BY 
+          ${errorCodes.length > 0 ? sql`AND e.error_code IN ${errorCodes}` : sql``}
+          ${versions.length > 0 ? sql`AND (${sql.join(versions.map(version => sql`e.user_agent LIKE ${`Gira+/${version}%`}`), sql` OR `)})` : sql``}
+        GROUP BY
           grouped_time
       )
       SELECT 

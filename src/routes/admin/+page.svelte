@@ -34,16 +34,6 @@
 		</div>
 	</header>
 
-	<!-- Token Monitoring Section -->
-	<div class="mt-12">
-		<TokenMonitor tokenSources={data.tokenSources} tokenStats={data.tokenStats} {interval}/>
-	</div>
-
-	<!-- Statistics Charts -->
-	<div class="mt-4">
-		<ErrorDashboard errorData={data.errorData} />
-	</div>
-
 	<!-- App Versions Chart -->
 	<div class="mt-4">
 		<AppVersionsChart
@@ -52,5 +42,15 @@
 			title="Versões da App"
 			description="Número de dispositivos únicos por versão da aplicação ao longo do tempo"
 		/>
+	</div>
+
+	<!-- Statistics Charts -->
+	<div class="mt-4">
+		<ErrorDashboard errorData={data.errorData} />
+	</div>
+
+	<!-- Token Monitoring Section -->
+	<div class="mt-12">
+		<TokenMonitor tokenSources={data.tokenSources} tokenStats={data.tokenStats} {interval}/>
 	</div>
 </div>

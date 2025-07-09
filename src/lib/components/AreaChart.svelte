@@ -14,7 +14,6 @@
 	let { endpoint, interval, groupBy, title, description, colorProperty = '--primary', tension = 0.4 } = $props();
 
 	let isSmallInterval = $derived(interval?.start?.add({ days: 1 }) >= interval?.end);
-	// let isLargeInterval = $derived(interval?.start?.add({ weeks: 2 }) < interval?.end);
 	let chartInstance: Chart<keyof ChartTypeRegistry, { x: Date; y: number }[]> | null = null;
 	let chartCanvas = $state<HTMLCanvasElement | null>(null);
 	let loading = $state(true);
@@ -59,7 +58,8 @@
 			const formattedStartDate = interval.start.toDate(getLocalTimeZone()).toISOString();
 			const formattedEndDate = interval.end.add({ days: 1 }).toDate(getLocalTimeZone()).toISOString();
 			const userTimezone = getLocalTimeZone();
-			const url = `/api/statistics/${endpoint}?start=${formattedStartDate}&end=${formattedEndDate}&groupBy=${groupBy}&timezone=${userTimezone}`;
+			const [path, query] = endpoint.split('?');
+			let url = `/api/statistics/${path}?start=${formattedStartDate}&end=${formattedEndDate}&groupBy=${groupBy}&timezone=${userTimezone}&${query}`;
 
 			const response = await fetch(url);
 			if (!response.ok) {

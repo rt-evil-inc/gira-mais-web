@@ -132,7 +132,7 @@
 					Monitorização de Tokens
 				</CardTitle>
 				<CardDescription>
-					Monitore os seus tokens em tempo real
+					Monitorização de tokens e dispositivos em tempo real
 				</CardDescription>
 			</div>
 			<div class="flex items-center gap-2">

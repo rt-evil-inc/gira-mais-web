@@ -350,7 +350,7 @@
 							<Tabs.TabsTrigger value="all" class="text-xs px-2">Todas</Tabs.TabsTrigger>
 							<Tabs.TabsTrigger value="android" class="text-xs px-2">Android</Tabs.TabsTrigger>
 							<Tabs.TabsTrigger value="ios" class="text-xs px-2">iOS</Tabs.TabsTrigger>
-							<Tabs.TabsTrigger value="web" class="text-xs px-2">Web</Tabs.TabsTrigger>
+							<!-- <Tabs.TabsTrigger value="web" class="text-xs px-2">Web</Tabs.TabsTrigger> -->
 						</Tabs.TabsList>
 					</Tabs.Root>
 				</div>
