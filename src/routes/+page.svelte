@@ -185,14 +185,12 @@
 				Porque Lisboa merece mais
 			</p>
 			<div class="flex flex-wrap gap-4 justify-center">
-				<div class="relative grayscale opacity-50">
+				<a href="https://gira-mais.app/android">
 					<img src="/google-play-button-pt.png" alt="Obter no Google Play" class="h-12 md:h-16" />
-					<Badge class="absolute -top-2 -right-2" variant="secondary">Brevemente</Badge>
-				</div>
-				<div class="relative grayscale opacity-50">
+				</a>
+				<a href="https://gira-mais.app/ios">
 					<img src="/app-store-button-pt.svg" alt="Descarregar na App Store" class="h-12 md:h-16" />
-					<Badge class="absolute -top-2 -right-2" variant="secondary">Brevemente</Badge>
-				</div>
+				</a>
 				<div class="relative grayscale opacity-50">
 					<img src="https://f-droid.org/badge/get-it-on-pt.png" alt="Disponível no F-Droid" class="h-12 md:h-16 scale-150 mx-6" />
 					<Badge class="absolute -top-2 -right-2" variant="secondary">Brevemente</Badge>
