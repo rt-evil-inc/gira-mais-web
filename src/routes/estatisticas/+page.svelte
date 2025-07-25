@@ -1,5 +1,6 @@
 <script lang="ts">
 	import StatisticsChart from '$lib/components/AreaChart.svelte';
+	import BikeRatingsChart from '$lib/components/BikeRatingsChart.svelte';
 	import StatisticsControls from '$lib/components/StatisticsControls.svelte';
 	import { ChartLine } from 'lucide-svelte';
 	import { getLocalTimeZone, today } from '@internationalized/date';
@@ -65,6 +66,12 @@
 		<StatisticsChart endpoint="trips" {interval} {groupBy}
 			title="Viagens"
 			description="Número de viagens ao longo do tempo"
+		/>
+	</div>
+	<div class="mt-4">
+		<BikeRatingsChart {interval} {groupBy}
+			title="Avaliações de Bicicletas"
+			description="Avaliações das bicicletas distribuídas por classificação (1-5 estrelas)"
 		/>
 	</div>
 </div>
