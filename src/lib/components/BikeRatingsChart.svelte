@@ -4,6 +4,8 @@
 	import { Chart, type ChartDataset } from 'chart.js/auto';
 	import colors from 'tailwindcss/colors';
 	import * as Card from '$lib/components/ui/card';
+	import * as Label from '$lib/components/ui/label';
+	import * as Tabs from '$lib/components/ui/tabs';
 	import { TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, type ChartTypeRegistry } from 'chart.js';
 	import 'chartjs-adapter-date-fns';
 	import { mode } from 'mode-watcher';
@@ -16,6 +18,7 @@
 	let chartCanvas = $state<HTMLCanvasElement | null>(null);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
+	let normalized = $state(false);
 	let chartData = $state<Array<{
 		label: string;
 		data: Array<{ timestamp: string; count: number }>;
@@ -79,10 +82,36 @@
 
 		const datasets: ChartDataset<'line', { x: Date; y: number }[]>[] = chartData.map((ratingData, index) => {
 			const color = ratingColors[index % ratingColors.length];
-			const data = ratingData.data.map(point => ({
-				x: new Date(point.timestamp),
-				y: point.count,
-			}));
+			let data: { x: Date; y: number }[];
+
+			if (normalized) {
+				// Calculate totals for each time point to normalize
+				const totals = new Map<string, number>;
+
+				// First pass: calculate totals for each timestamp
+				chartData.forEach(series => {
+					series.data.forEach(point => {
+						const existing = totals.get(point.timestamp) || 0;
+						totals.set(point.timestamp, existing + point.count);
+					});
+				});
+
+				// Second pass: normalize this series data
+				data = ratingData.data.map(point => {
+					const total = totals.get(point.timestamp) || 0;
+					const normalizedValue = total > 0 ? point.count / total : 0;
+					return {
+						x: new Date(point.timestamp),
+						y: normalizedValue,
+					};
+				});
+			} else {
+				// Use raw counts
+				data = ratingData.data.map(point => ({
+					x: new Date(point.timestamp),
+					y: point.count,
+				}));
+			}
 
 			return {
 				label: ratingData.label,
@@ -149,7 +178,11 @@
 							label: context => {
 								const label = context.dataset.label || '';
 								const value = context.parsed.y;
-								return `${label}: ${value} avaliações`;
+								if (normalized) {
+									return `${label}: ${(value * 100).toFixed(1)}%`;
+								} else {
+									return `${label}: ${value} avaliações`;
+								}
 							},
 						},
 					},
@@ -184,15 +217,23 @@
 					y: {
 						beginAtZero: true,
 						stacked: true,
+						max: normalized ? 1 : undefined,
 						ticks: {
 							precision: 0,
 							font: {
 								family: 'Inter',
 							},
+							callback: function (value) {
+								if (normalized) {
+									return `${(Number(value) * 100).toFixed(0)}%`;
+								} else {
+									return value;
+								}
+							},
 						},
 						title: {
 							display: true,
-							text: 'Número de Avaliações',
+							text: normalized ? 'Proporção de Avaliações' : 'Número de Avaliações',
 							font: {
 								family: 'Inter',
 							},
@@ -230,6 +271,17 @@
 				<Card.CardDescription>
 					{description}
 				</Card.CardDescription>
+			</div>
+			<div class="flex gap-4 items-center">
+				<div class="flex flex-col gap-1">
+					<Label.Root class="text-xs">Visualização</Label.Root>
+					<Tabs.Root value={normalized ? 'normalized' : 'absolute'} onValueChange={value => { normalized = value === 'normalized'; }}>
+						<Tabs.TabsList class="h-8">
+							<Tabs.TabsTrigger value="absolute" class="text-xs px-2">Absoluto</Tabs.TabsTrigger>
+							<Tabs.TabsTrigger value="normalized" class="text-xs px-2">Normalizado</Tabs.TabsTrigger>
+						</Tabs.TabsList>
+					</Tabs.Root>
+				</div>
 			</div>
 		</div>
 	</Card.CardHeader>
