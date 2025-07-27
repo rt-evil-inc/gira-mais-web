@@ -168,14 +168,9 @@
 	<meta name="twitter:image" content="https://gira-mais.app/card.png" />
 </svelte:head>
 
-<div class="min-h-screen bg-background dark text-foreground">
+<div class="min-h-screen bg-background text-foreground">
 	<!-- Hero Section -->
 	<section class="py-20 text-center">
-		<div class="absolute top-4 right-4 hidden md:flex gap-2">
-			<Button variant="ghost" size="sm" href="https://github.com/rt-evil-inc/gira-mais" target="_blank">GitHub</Button>
-			<Button variant="ghost" size="sm" href="/estatisticas">Estatísticas</Button>
-			<!-- <Button variant="ghost" size="sm" href="/blog">Blog</Button> -->
-		</div>
 		<div class="container px-4 mx-auto flex flex-col items-center">
 			<div title="Logotipo da Gira+ desenhado por Inês Freitas">
 				<Logo class="h-32 md:h-40 mb-8" />

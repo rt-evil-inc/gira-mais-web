@@ -7,17 +7,12 @@
 	import LightSwitch from '$lib/components/LightSwitch.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
-	import { browser } from '$app/environment';
 
 	let interval = $state({
 		start: today(getLocalTimeZone()).add({ days: -7 }),
 		end: today(getLocalTimeZone()),
 	});
 	let groupBy = $state('hour');
-	let admin = $state(false);
-	if (browser) {
-		admin = localStorage.getItem('admin') === 'true';
-	}
 </script>
 
 <svelte:head>
@@ -34,13 +29,6 @@
 	<meta name="twitter:description" content="Estatísticas de utilização da aplicação Gira+" />
 	<meta name="twitter:image" content="https://gira-mais.app/card.png" />
 </svelte:head>
-
-<div class="absolute right-0 top-0 m-4 flex items-center gap-2">
-	{#if admin}
-		<Button variant="ghost" size="sm" href="/admin" data-sveltekit-preload-data="tap">Admin</Button>
-	{/if}
-	<LightSwitch />
-</div>
 
 <div class="container min-h-screen mx-auto py-12 px-4 max-w-6xl">
 	<header class="mb-10">
@@ -71,7 +59,7 @@
 	<div class="mt-4">
 		<BikeRatingsChart {interval} {groupBy}
 			title="Avaliações de Bicicletas"
-			description="Avaliações das bicicletas distribuídas por classificação (1-5 estrelas)"
+			description="Avaliações das bicicletas distribuídas por classificação"
 		/>
 	</div>
 </div>

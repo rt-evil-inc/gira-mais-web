@@ -85,12 +85,6 @@
 	<title>Gira+ | Admin</title>
 </svelte:head>
 
-<div class="absolute right-0 top-0 m-4 flex items-center gap-2">
-	<Button variant="ghost" size="sm" href="/admin">Monitorização</Button>
-	<Button variant="ghost" size="sm" href="/estatisticas">Estatísticas</Button>
-	<LightSwitch />
-</div>
-
 <div class="container mx-auto py-12 px-4 max-w-6xl">
 	<header class="mb-10">
 		<div class="flex items-center mb-4">
