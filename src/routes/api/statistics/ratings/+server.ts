@@ -32,12 +32,23 @@ export const POST: RequestHandler = async ({ request }) => {
 		throw error(400, { message: 'invalid user-agent' });
 	}
 
+	// Validate timestamp
+	let timestamp: Date | undefined;
+	if (body.timestamp) {
+		const parsedTimestamp = new Date(body.timestamp);
+		if (isNaN(parsedTimestamp.getTime())) {
+			throw error(400, { message: 'Invalid timestamp format' });
+		}
+		timestamp = parsedTimestamp;
+	}
+
 	try {
 		// Store bike rating in database
 		await db.insert(bikeRatings).values({
 			deviceId: body.deviceId,
 			bikeSerial: body.bikeSerial,
 			rating: rating,
+			...timestamp && { timestamp }, // Use provided timestamp if valid
 		});
 
 		// Return success response
