@@ -18,7 +18,7 @@
 	let chartCanvas = $state<HTMLCanvasElement | null>(null);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
-	let normalized = $state(false);
+	let normalized = $state(true);
 	let chartData = $state<Array<{
 		label: string;
 		data: Array<{ timestamp: string; count: number }>;

@@ -1,18 +1,18 @@
 <script lang="ts">
-	import StatisticsChart from '$lib/components/AreaChart.svelte';
-	import BikeRatingsChart from '$lib/components/BikeRatingsChart.svelte';
+	import AreaChart from '$lib/components/AreaChart.svelte';
+	import BarChart from '$lib/components/BarChart.svelte';
 	import StatisticsControls from '$lib/components/StatisticsControls.svelte';
 	import { ChartLine } from 'lucide-svelte';
 	import { getLocalTimeZone, today } from '@internationalized/date';
-	import LightSwitch from '$lib/components/LightSwitch.svelte';
 	import Footer from '$lib/components/Footer.svelte';
-	import Button from '$lib/components/ui/button/button.svelte';
+	import BikeRatingsChart from '$lib/components/BikeRatingsChart.svelte';
 
 	let interval = $state({
-		start: today(getLocalTimeZone()).add({ days: -7 }),
+		start: today(getLocalTimeZone()).add({ months: -1 }),
 		end: today(getLocalTimeZone()),
 	});
-	let groupBy = $state('hour');
+	let groupBy = $state('day');
+	let chartType = $state('area');
 </script>
 
 <svelte:head>
@@ -40,21 +40,35 @@
 
 	<!-- Chart Controls -->
 	<div class="mt-8 mb-4">
-		<StatisticsControls bind:interval bind:groupBy />
+		<StatisticsControls bind:interval bind:groupBy bind:chartType />
 	</div>
 
 	<!-- Statistics Charts -->
 	<div>
-		<StatisticsChart endpoint="usage" {interval} {groupBy}
-			title="Utilizadores"
-			description="Número de utilizadores únicos ao longo do tempo"
-		/>
+		{#if chartType === 'area'}
+			<AreaChart endpoint="usage" {interval} {groupBy}
+				title="Utilizadores"
+				description="Número de utilizadores únicos ao longo do tempo"
+			/>
+		{:else}
+			<BarChart endpoint="usage" {interval} {groupBy}
+				title="Utilizadores"
+				description="Número de utilizadores únicos ao longo do tempo"
+			/>
+		{/if}
 	</div>
 	<div class="mt-4">
-		<StatisticsChart endpoint="trips" {interval} {groupBy}
-			title="Viagens"
-			description="Número de viagens ao longo do tempo"
-		/>
+		{#if chartType === 'area'}
+			<AreaChart endpoint="trips" {interval} {groupBy}
+				title="Viagens"
+				description="Número de viagens ao longo do tempo"
+			/>
+		{:else}
+			<BarChart endpoint="trips" {interval} {groupBy}
+				title="Viagens"
+				description="Número de viagens ao longo do tempo"
+			/>
+		{/if}
 	</div>
 	<div class="mt-4">
 		<BikeRatingsChart {interval} {groupBy}

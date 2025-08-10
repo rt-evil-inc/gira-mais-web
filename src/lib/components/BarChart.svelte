@@ -3,15 +3,15 @@
 	import { getLocalTimeZone } from '@internationalized/date';
 	import { Chart, type ChartDataset } from 'chart.js/auto';
 	import * as Card from '$lib/components/ui/card';
-	import { TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, type ChartTypeRegistry } from 'chart.js';
+	import { TimeScale, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, type ChartTypeRegistry } from 'chart.js';
 	import 'chartjs-adapter-date-fns';
 	import { mode } from 'mode-watcher';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import annotationPlugin from 'chartjs-plugin-annotation';
 
-	Chart.register(TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, annotationPlugin);
+	Chart.register(TimeScale, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, annotationPlugin);
 
-	let { endpoint, interval, groupBy, title, description, colorProperty = '--primary', tension = 0.4 } = $props();
+	let { endpoint, interval, groupBy, title, description, colorProperty = '--primary' } = $props();
 
 	let isSmallInterval = $derived(interval?.start?.add({ days: 1 }) >= interval?.end);
 	let chartInstance: Chart<keyof ChartTypeRegistry, { x: Date; y: number }[]> | null = null;
@@ -88,41 +88,33 @@
 
 		const style = getComputedStyle(document.body);
 
-		const datasets: ChartDataset<'line', { x: Date; y: number }[]>[] = [{
+		const datasets: ChartDataset<'bar', { x: Date; y: number }[]>[] = [{
 			label: title,
 			data: data,
-			borderColor: `hsl(${style.getPropertyValue(colorProperty)})`,
-			borderWidth: 2,
-			tension: tension,
-			fill: true,
-			pointRadius: 0,
-			segment: {
-				borderDash: (context: any) => {
-					const index = context.p1DataIndex;
-					const isLastSegment = index === data.length - 1;
-					if (!isLastSegment) return undefined;
+			backgroundColor: (context: any) => {
+				const pointDate = new Date(context.raw.x);
+				const now = new Date;
+				let isOngoing = false;
 
-					const pointDate = data[index].x;
-					const now = new Date;
-					let isOngoing = false;
+				if (groupBy === 'hour') {
+					isOngoing =
+						pointDate.getFullYear() === now.getFullYear() &&
+						pointDate.getMonth() === now.getMonth() &&
+						pointDate.getDate() === now.getDate() &&
+						pointDate.getHours() === now.getHours();
+				} else if (groupBy === 'day') {
+					isOngoing =
+						pointDate.getFullYear() === now.getFullYear() &&
+						pointDate.getMonth() === now.getMonth() &&
+						pointDate.getDate() === now.getDate();
+				}
 
-					if (groupBy === 'hour') {
-						isOngoing =
-							pointDate.getFullYear() === now.getFullYear() &&
-							pointDate.getMonth() === now.getMonth() &&
-							pointDate.getDate() === now.getDate() &&
-							pointDate.getHours() === now.getHours();
-					} else if (groupBy === 'day') {
-						isOngoing =
-							pointDate.getFullYear() === now.getFullYear() &&
-							pointDate.getMonth() === now.getMonth() &&
-							pointDate.getDate() === now.getDate();
-					}
-
-					return isOngoing ? [5, 5] : undefined;
-				},
+				return `hsl(${style.getPropertyValue(colorProperty)} / ${isOngoing ? 0.4 : 0.8})`;
 			},
-			backgroundColor: `hsl(${style.getPropertyValue(colorProperty)} / 0.3)`,
+			borderRadius: {
+				topLeft: 5,
+				topRight: 5,
+			},
 		}];
 
 		Chart.defaults.backgroundColor = '#00000000';
@@ -186,7 +178,7 @@
 
 		// Create a new chart with time axis
 		chartInstance = new Chart(chartCanvas, {
-			type: 'line',
+			type: 'bar',
 			data: {
 				datasets,
 			},

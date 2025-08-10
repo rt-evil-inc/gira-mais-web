@@ -4,15 +4,16 @@
 	import * as Popover from '$lib/components/ui/popover';
 	import { Button } from '$lib/components/ui/button';
 	import { RangeCalendar } from '$lib/components/ui/range-calendar';
-	import { Calendar as CalendarIcon } from 'lucide-svelte';
+	import { Calendar as CalendarIcon, AreaChart as AreaChartIcon, BarChart3 as BarChartIcon } from 'lucide-svelte';
 	import type { DateRange } from 'bits-ui';
 
 	let {
 		interval = $bindable<DateRange>({
-			start: today(getLocalTimeZone()).add({ days: -7 }),
+			start: today(getLocalTimeZone()).add({ months: -1 }),
 			end: today(getLocalTimeZone()),
 		}) as DateRange,
-		groupBy = $bindable<string>('hour'),
+		groupBy = $bindable<string>('day'),
+		chartType = $bindable<string>('area'),
 	} = $props();
 
 	const isSmallInterval = $derived(interval.start && interval.end ?
@@ -29,10 +30,11 @@
 	});
 </script>
 
-<div class="flex flex-col items-center justify-between sm:flex-row gap-4 mt-2">
+<div class="flex flex-col lg:flex-row gap-4 mt-2 lg:items-center lg:justify-between">
+	<!-- Date Range Controls Group -->
 	<div class="flex flex-wrap gap-2">
 		<Popover.Root>
-			<Popover.PopoverTrigger class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3 py-1 ml-auto">
+			<Popover.PopoverTrigger class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground px-3 py-1">
 				<CalendarIcon class="mr-2 h-4 w-4" />
 				<span class="w-46">{interval.start?.toString()} - {interval.end?.toString()}</span>
 			</Popover.PopoverTrigger>
@@ -73,12 +75,32 @@
 		</Button>
 	</div>
 
-	<div>
-		<Tabs.Root value={groupBy} disabled={isSmallInterval || isLargeInterval} onValueChange={value => { groupBy = value; }}>
-			<Tabs.TabsList>
-				<Tabs.TabsTrigger value="hour">Por hora</Tabs.TabsTrigger>
-				<Tabs.TabsTrigger value="day">Por dia</Tabs.TabsTrigger>
-			</Tabs.TabsList>
-		</Tabs.Root>
+	<!-- Chart Controls Group -->
+	<div class="flex flex-wrap gap-4 justify-center lg:justify-end">
+		<!-- Chart Type Selector -->
+		<div>
+			<Tabs.Root value={chartType} onValueChange={value => { chartType = value; }}>
+				<Tabs.TabsList>
+					<Tabs.TabsTrigger value="area" class="flex items-center gap-2">
+						<AreaChartIcon class="h-5 w-5" />
+						<span class="sr-only">Área</span>
+					</Tabs.TabsTrigger>
+					<Tabs.TabsTrigger value="bar" class="flex items-center gap-2">
+						<BarChartIcon class="h-5 w-5" />
+						<span class="sr-only">Barras</span>
+					</Tabs.TabsTrigger>
+				</Tabs.TabsList>
+			</Tabs.Root>
+		</div>
+
+		<!-- Group By Selector -->
+		<div>
+			<Tabs.Root value={groupBy} disabled={isSmallInterval || isLargeInterval} onValueChange={value => { groupBy = value; }}>
+				<Tabs.TabsList>
+					<Tabs.TabsTrigger value="hour">Por hora</Tabs.TabsTrigger>
+					<Tabs.TabsTrigger value="day">Por dia</Tabs.TabsTrigger>
+				</Tabs.TabsList>
+			</Tabs.Root>
+		</div>
 	</div>
 </div>
