@@ -49,6 +49,7 @@ export const bikeRatings = pgTable('bike_ratings', {
 	id: serial('id').primaryKey(),
 	deviceId: varchar('device_id', { length: 64 }).notNull(),
 	timestamp: timestamp('timestamp').defaultNow().notNull(),
-	bikeSerial: varchar('bike_serial', { length: 32 }).notNull(),
+	tripCode: varchar('trip_code', { length: 16 }),
+	bikePlate: varchar('bike_plate', { length: 8 }),
 	rating: integer('rating').notNull(),
 });

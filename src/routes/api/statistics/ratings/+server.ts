@@ -14,10 +14,6 @@ export const POST: RequestHandler = async ({ request }) => {
 		throw error(400, { message: 'deviceId is required' });
 	}
 
-	if (!body.bikeSerial) {
-		throw error(400, { message: 'bikeSerial is required' });
-	}
-
 	if (!body.rating) {
 		throw error(400, { message: 'rating is required' });
 	}
@@ -46,7 +42,8 @@ export const POST: RequestHandler = async ({ request }) => {
 		// Store bike rating in database
 		await db.insert(bikeRatings).values({
 			deviceId: body.deviceId,
-			bikeSerial: body.bikeSerial,
+			tripCode: body.tripCode,
+			bikePlate: body.bikePlate,
 			rating: rating,
 			...timestamp && { timestamp }, // Use provided timestamp if valid
 		});
