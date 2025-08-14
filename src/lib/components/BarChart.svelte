@@ -222,6 +222,9 @@
 						time: {
 							unit: isSmallInterval ? 'hour' : 'day',
 						},
+						grid: {
+							display: false,
+						},
 						title: {
 							display: true,
 							text: 'Tempo',
