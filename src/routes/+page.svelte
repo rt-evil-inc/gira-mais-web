@@ -513,7 +513,7 @@
 						</div>
 						<div class="flex flex-col items-center justify-center w-80 mx-auto grow">
 							<div class="flex flex-wrap items-center justify-center gap-2 mb-6">
-								{#each sponsors.slice(0, 23).reverse() as sponsor}
+								{#each sponsors.slice(-23).reverse() as sponsor}
 									<a href={sponsor.profile} target="_blank" title={sponsor.details.name || sponsor.handle} class="relative hover:z-10 transition-transform {sponsors.length > 15 ? '-ml-4 translate-x-2' : ''} hover:scale-110">
 										<Avatar class="h-12 w-12 bg-muted">
 											<AvatarImage src={sponsor.avatar} alt={sponsor.handle} />
@@ -614,7 +614,7 @@
 						</div>
 						<div class="flex flex-col items-center justify-center w-80 mx-auto grow">
 							<div class="flex flex-wrap items-center justify-center gap-2 mb-6">
-								{#each stargazers.slice(0, 23).reverse() as stargazer}
+								{#each stargazers.slice(-23).reverse() as stargazer}
 									<a href={stargazer.html_url} target="_blank" title={stargazer.login} class="relative hover:z-10 transition-transform {repoStats.stars > 15 ? '-ml-4 translate-x-2' : ''} hover:scale-110">
 										<Avatar class="h-12 w-12 bg-muted">
 											<AvatarImage src={stargazer.avatar_url} alt={stargazer.login} />
