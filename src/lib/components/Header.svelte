@@ -54,11 +54,11 @@
 							<Sheet.Close class="text-left">
 								<a href="/estatisticas" class="text-lg font-medium">Estatísticas</a>
 							</Sheet.Close>
-							<Sheet.Close class="text-left">
-								{#if admin}
+							{#if admin}
+								<Sheet.Close class="text-left">
 									<a href="/admin" class="text-lg font-medium">Admin</a>
-								{/if}
-							</Sheet.Close>
+								</Sheet.Close>
+							{/if}
 							<a href="https://github.com/rt-evil-inc/gira-mais" target="_blank" class="text-lg font-medium">GitHub</a>
 							<a href="https://github.com/orgs/rt-evil-inc/projects/1/views/7" target="_blank" class="text-lg font-medium">Roadmap</a>
 							<a href="https://github.com/rt-evil-inc/gira-mais/releases" target="_blank" class="text-lg font-medium">Release Notes</a>
