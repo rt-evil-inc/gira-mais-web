@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, varchar, integer } from 'drizzle-orm/pg-core';
+import { index, integer, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
 
 export const usage = pgTable('usage', {
 	id: serial('id').primaryKey(),
@@ -45,11 +45,18 @@ export const integrityTokens = pgTable('integrity_tokens', {
 	userAgent: varchar('user_agent', { length: 512 }),
 });
 
-export const bikeRatings = pgTable('bike_ratings', {
-	id: serial('id').primaryKey(),
-	deviceId: varchar('device_id', { length: 64 }).notNull(),
-	timestamp: timestamp('timestamp').defaultNow().notNull(),
-	tripCode: varchar('trip_code', { length: 16 }),
-	bikePlate: varchar('bike_plate', { length: 8 }),
-	rating: integer('rating').notNull(),
-});
+export const bikeRatings = pgTable(
+	'bike_ratings',
+	{
+		id: serial('id').primaryKey(),
+		deviceId: varchar('device_id', { length: 64 }).notNull(),
+		timestamp: timestamp('timestamp').defaultNow().notNull(),
+		ratedAt: timestamp('rated_at'),
+		tripCode: varchar('trip_code', { length: 16 }),
+		bikePlate: varchar('bike_plate', { length: 8 }),
+		rating: integer('rating').notNull(),
+	},
+	table => [
+		index('bike_ratings_bike_plate_timestamp_idx').on(table.bikePlate, table.timestamp),
+	],
+);

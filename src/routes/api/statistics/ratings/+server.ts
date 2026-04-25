@@ -45,6 +45,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			tripCode: body.tripCode,
 			bikePlate: body.bikePlate,
 			rating: rating,
+			ratedAt: new Date,
 			...timestamp && { timestamp }, // Use provided timestamp if valid
 		});
 
