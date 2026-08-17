@@ -43,112 +43,39 @@
 		forks: number;
 	}
 
+	const designContributors: GitHubUser[] = [{
+		login: 'Inês Freitas',
+		avatar_url: 'https://mir-s3-cdn-cf.behance.net/user/115/29e4031136169129.645f9d7b634e6.png',
+		html_url: 'https://pt.linkedin.com/in/ines-t-freitas',
+		contributions: 'Design do logotipo',
+	}];
+
 	let sponsors = $state<Sponsor[]>([]);
 	let codeContributors = $state<GitHubUser[]>([]);
-	let designContributors = $state<GitHubUser[]>([]);
 	let stargazers = $state<GitHubUser[]>([]);
 	let repoStats = $state<RepoStats>({ stars: 0, forks: 0 });
 	let isLoading = $state(true);
 
-	// Calculate optimal pagination to get recent items from the last page
-	function calculateOptimalPagination(totalItems: number, itemsToShow: number, maxPerPage = 100) {
-		if (totalItems <= itemsToShow) {
-			return { perPage: totalItems, page: 1 };
-		}
-
-		let perPage = maxPerPage; // fallback to max if no optimal value found
-		// Find the smallest per_page value that ensures at least itemsToShow items on the last page
-		for (let testPerPage = itemsToShow; testPerPage <= maxPerPage; testPerPage++) {
-			const remainder = totalItems % testPerPage;
-			if (remainder === 0 || remainder >= itemsToShow) {
-				perPage = testPerPage; // Use the first (smallest) value that works
-				break;
-			}
-		}
-
-		const lastPage = Math.ceil(totalItems / perPage);
-		return { perPage, page: lastPage };
-	}
-
-	// Fetch GitHub data
-	async function fetchGitHubData() {
+	// Fetched through our own endpoint because listing stargazers requires an authenticated request
+	async function fetchCommunityData() {
 		try {
-			// First, get repo stats and contributor count
-			const [repoResponse, contributorsCountResponse] = await Promise.all([
-				fetch('https://api.github.com/repos/rt-evil-inc/gira-mais'),
-				fetch('https://api.github.com/repos/rt-evil-inc/gira-mais/contributors?per_page=1'), // Just to get the total count from headers
-			]);
+			const response = await fetch('/api/github/community');
+			if (!response.ok) throw new Error(`Community endpoint responded ${response.status}`);
 
-			let totalStars = 0;
-			let totalContributors = 0;
-
-			if (repoResponse.ok) {
-				const repoData = await repoResponse.json();
-				totalStars = repoData.stargazers_count;
-				repoStats = {
-					stars: totalStars,
-					forks: repoData.forks_count,
-				};
-			}
-
-			// Get total contributors count from the Link header or fallback
-			if (contributorsCountResponse.ok) {
-				const linkHeader = contributorsCountResponse.headers.get('Link');
-				if (linkHeader) {
-					// Parse the last page number from Link header
-					const lastPageMatch = linkHeader.match(/page=(\d+)>; rel="last"/);
-					if (lastPageMatch) {
-						totalContributors = parseInt(lastPageMatch[1]);
-					}
-				}
-
-				// Fallback: if we can't get count from headers, estimate or use a reasonable default
-				if (!totalContributors) {
-					const contributors = await contributorsCountResponse.json();
-					totalContributors = contributors.length || 50; // Fallback estimate
-				}
-			}
-
-			// Calculate optimal pagination for both stargazers and contributors
-			const starsPagination = calculateOptimalPagination(totalStars, 23);
-			const contributorsPagination = calculateOptimalPagination(totalContributors, 12);
-
-			const [contributorsResponse, stargazersResponse, sponsorsResponse] = await Promise.all([
-				fetch(`https://api.github.com/repos/rt-evil-inc/gira-mais/contributors?per_page=${contributorsPagination.perPage}&page=${contributorsPagination.page}`),
-				fetch(`https://api.github.com/repos/rt-evil-inc/gira-mais/stargazers?per_page=${starsPagination.perPage}&page=${starsPagination.page}`),
-				fetch('https://ghs.vercel.app/sponsors/rt-evil-inc'),
-			]);
-
-			if (contributorsResponse.ok) {
-				const githubContributors = await contributorsResponse.json();
-				codeContributors = githubContributors;
-
-				designContributors = [{
-					login: 'Inês Freitas',
-					avatar_url: 'https://mir-s3-cdn-cf.behance.net/user/115/29e4031136169129.645f9d7b634e6.png',
-					html_url: 'https://pt.linkedin.com/in/ines-t-freitas',
-					contributions: 'Design do logotipo',
-				}];
-			}
-
-			if (stargazersResponse.ok) {
-				const fetchedStargazers = await stargazersResponse.json();
-				stargazers = fetchedStargazers;
-			}
-
-			if (sponsorsResponse.ok) {
-				const sponsorsData = await sponsorsResponse.json();
-				sponsors = sponsorsData.sponsors || [];
-			}
+			const data = await response.json();
+			repoStats = data.repo;
+			codeContributors = data.contributors;
+			stargazers = data.stargazers;
+			sponsors = data.sponsors;
 		} catch (error) {
-			console.error('Error fetching GitHub data:', error);
+			console.error('Error fetching community data:', error);
 		} finally {
 			isLoading = false;
 		}
 	}
 
 	onMount(() => {
-		fetchGitHubData();
+		fetchCommunityData();
 	});
 </script>
 
@@ -621,10 +548,10 @@
 										</Avatar>
 									</a>
 								{/each}
-								{#if repoStats.stars > 23}
+								{#if repoStats.stars > stargazers.length}
 									<a href="https://github.com/rt-evil-inc/gira-mais/stargazers" target="_blank" title="Ver todas as estrelas" class="relative hover:z-10 transition-transform -ml-4 translate-x-2 hover:scale-110 !no-underline !text-foreground">
 										<Avatar class="h-12 w-12 bg-muted">
-											<AvatarFallback class="bg-muted text-xs">+{repoStats.stars - 23}</AvatarFallback>
+											<AvatarFallback class="bg-muted text-xs">+{repoStats.stars - stargazers.length}</AvatarFallback>
 										</Avatar>
 									</a>
 								{/if}

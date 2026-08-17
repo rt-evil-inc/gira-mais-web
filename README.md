@@ -74,3 +74,4 @@ Para executar a aplicação em modo de desenvolvimento:
 - `ADMIN_LOGIN` - Credenciais de administrador no formato `utilizador:password`
 - `NODE_ENV` - Ambiente de execução (`development` ou `production`)
 - `INITIAL_DATE` - Data inicial para os dados estatísticos
+- `GITHUB_TOKEN` - Token do GitHub para ler dados públicos do repositório (listar quem deu estrela exige autenticação). Tem de ser um token clássico com o âmbito `public_repo`, visto que os tokens *fine-grained* não conseguem listar quem deu estrela
