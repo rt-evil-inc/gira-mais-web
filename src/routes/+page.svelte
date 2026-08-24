@@ -171,12 +171,12 @@
 						<Card>
 							<CardHeader>
 								<div class="flex gap-2 justify-between">
-									<CardTitle>Detalhes em viagem</CardTitle>
-									<Route size={24} class="stroke-primary" />
+									<CardTitle>Sistema de navegação</CardTitle>
+									<Navigation size={24} class="stroke-primary" />
 								</div>
 							</CardHeader>
 							<CardContent>
-								<p>Acompanhamento em tempo real da sua viagem, com informação sobre o trajeto percorrido.</p>
+								<p>Visualização da melhor rota para a sua viagem, considerando as ciclovias.</p>
 							</CardContent>
 						</Card>
 						<Card>
@@ -190,16 +190,15 @@
 								<p>Tema escuro para uma utilização mais confortável durante a noite.</p>
 							</CardContent>
 						</Card>
-						<Card class="relative opacity-50 grayscale">
-							<Badge class="absolute top-2 right-2" variant="secondary">Brevemente</Badge>
+						<Card>
 							<CardHeader>
 								<div class="flex gap-2 justify-between">
-									<CardTitle>Sistema de navegação</CardTitle>
-									<Navigation size={24} class="stroke-primary" />
+									<CardTitle>Detalhes em viagem</CardTitle>
+									<Route size={24} class="stroke-primary" />
 								</div>
 							</CardHeader>
 							<CardContent>
-								<p>Visualização da melhor rota para a sua viagem, considerando as ciclovias.</p>
+								<p>Acompanhamento em tempo real da sua viagem, com informação sobre o trajeto percorrido e a rota planeada.</p>
 							</CardContent>
 						</Card>
 					</div>
