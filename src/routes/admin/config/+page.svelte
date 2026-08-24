@@ -3,7 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { toast } from 'svelte-sonner';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Settings, AlertTriangle } from 'lucide-svelte';
+	import { Settings, AlertTriangle } from '@lucide/svelte';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';

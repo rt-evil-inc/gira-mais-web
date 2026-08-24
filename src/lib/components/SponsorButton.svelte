@@ -1,6 +1,6 @@
 <script>
 	import Button from '$lib/components/ui/button/button.svelte';
-	import { HeartIcon } from 'lucide-svelte';
+	import { Heart as HeartIcon } from '@lucide/svelte';
 	import { cn } from '$lib/utils';
 
 	let { class: className = '' } = $props();

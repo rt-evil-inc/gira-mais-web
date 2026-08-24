@@ -3,7 +3,7 @@
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '$lib/components/ui/accordion';
 	import { Avatar, AvatarFallback, AvatarImage } from '$lib/components/ui/avatar';
-	import { Github, Navigation, Route, Map, WandSparkles, MoonStar, ExternalLink, Star, Heart } from 'lucide-svelte';
+	import { Github, Navigation, Route, Map, WandSparkles, MoonStar, ExternalLink, Star, Heart } from '@lucide/svelte';
 	import * as Carousel from '$lib/components/ui/carousel';
 	import Autoplay from 'embla-carousel-autoplay';
 	import { Badge } from '$lib/components/ui/badge';

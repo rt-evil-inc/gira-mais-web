@@ -4,7 +4,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Popover, PopoverContent, PopoverTrigger } from '$lib/components/ui/popover';
-	import { AlertTriangle, RefreshCw, Smartphone, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Filter, X } from 'lucide-svelte';
+	import { AlertTriangle, RefreshCw, Smartphone, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Filter, X } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import { pt } from 'date-fns/locale';
 	import { invalidate } from '$app/navigation';

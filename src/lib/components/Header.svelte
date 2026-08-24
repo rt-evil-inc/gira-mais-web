@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import * as Sheet from '$lib/components/ui/sheet';
-	import { Menu } from 'lucide-svelte';
+	import { Menu } from '@lucide/svelte';
 	import Logo from '$lib/components/Logo.svelte';
 	import LightSwitch from '$lib/components/LightSwitch.svelte';
 	import { browser } from '$app/environment';

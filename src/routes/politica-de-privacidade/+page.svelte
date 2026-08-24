@@ -1,6 +1,6 @@
 <script>
 	import Footer from '$lib/components/Footer.svelte';
-	import { Shield } from 'lucide-svelte';
+	import { Shield } from '@lucide/svelte';
 </script>
 
 <svelte:head>

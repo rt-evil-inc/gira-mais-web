@@ -3,7 +3,7 @@
 	import BarChart from '$lib/components/BarChart.svelte';
 	import StatisticsControls from '$lib/components/StatisticsControls.svelte';
 	import StatCard from '$lib/components/StatCard.svelte';
-	import { ChartLine, Users, Route } from 'lucide-svelte';
+	import { ChartLine, Users, Route } from '@lucide/svelte';
 	import { getLocalTimeZone, today } from '@internationalized/date';
 	import Footer from '$lib/components/Footer.svelte';
 	import BikeRatingsChart from '$lib/components/BikeRatingsChart.svelte';

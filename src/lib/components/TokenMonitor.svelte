@@ -3,7 +3,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { ChevronDown, ChevronRight, Search, RefreshCw, Clock, Smartphone } from 'lucide-svelte';
+	import { ChevronDown, ChevronRight, Search, RefreshCw, Clock, Smartphone } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import { pt } from 'date-fns/locale';
 	import { invalidate } from '$app/navigation';

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import { ChartLine } from 'lucide-svelte';
+	import { ChartLine } from '@lucide/svelte';
 	import TokenMonitor from '$lib/components/TokenMonitor.svelte';
 	import ErrorDashboard from '$lib/components/ErrorDashboard.svelte';
 	import AppVersionsChart from '$lib/components/AppVersionsChart.svelte';

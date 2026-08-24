@@ -4,7 +4,7 @@
 	import * as Popover from '$lib/components/ui/popover';
 	import { Button } from '$lib/components/ui/button';
 	import { RangeCalendar } from '$lib/components/ui/range-calendar';
-	import { Calendar as CalendarIcon, AreaChart as AreaChartIcon, BarChart3 as BarChartIcon } from 'lucide-svelte';
+	import { Calendar as CalendarIcon, AreaChart as AreaChartIcon, BarChart3 as BarChartIcon } from '@lucide/svelte';
 	import type { DateRange } from 'bits-ui';
 
 	let {
