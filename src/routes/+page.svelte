@@ -10,26 +10,16 @@
 	import Logo from '$lib/components/Logo.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import { onMount } from 'svelte';
+	import { avatarUrl } from '$lib/utils';
 
-	const screenshots = [
-		'/screenshots/screenshot-1.png',
-		'/screenshots/screenshot-2.png',
-		'/screenshots/screenshot-3.png',
-		'/screenshots/screenshot-4.png',
-		'/screenshots/screenshot-5.png',
-		'/screenshots/screenshot-6.png',
-		'/screenshots/screenshot-7.png',
-		'/screenshots/screenshot-8.png',
-		'/screenshots/screenshot-9.png',
-		'/screenshots/screenshot-10.png',
-	];
+	const screenshots = import.meta.glob<{ default: string }>('$lib/assets/screenshots/*', { eager: true, query: '?enhanced&w=300;600' });
 
-	// GitHub data state
 	interface GitHubUser {
 		login: string;
 		avatar_url: string;
 		html_url: string;
 		contributions?: number | string;
+		name?: string;
 	}
 
 	interface Sponsor {
@@ -106,14 +96,14 @@
 				Porque Lisboa merece mais
 			</p>
 			<div class="flex flex-wrap gap-4 justify-center">
-				<a href="https://gira-mais.app/android">
-					<img src="/google-play-button-pt.png" alt="Obter no Google Play" class="h-12 md:h-16" />
+				<a href="https://gira-mais.app/android" target="_blank" aria-label="Obter no Google Play">
+					<enhanced:img src="$lib/assets/google-play-button-pt.png" alt="Obter no Google Play" sizes="(min-width: 768px) 216px, 162px" class="h-12 md:h-16 w-auto" />
 				</a>
-				<a href="https://gira-mais.app/ios">
-					<img src="/app-store-button-pt.svg" alt="Descarregar na App Store" class="h-12 md:h-16" />
+				<a href="https://gira-mais.app/ios" target="_blank" aria-label="Descarregar na App Store">
+					<enhanced:img src="$lib/assets/app-store-button-pt.svg" alt="Descarregar na App Store" class="h-12 md:h-16 w-auto" />
 				</a>
 				<div class="relative grayscale opacity-50">
-					<img src="https://f-droid.org/badge/get-it-on-pt.png" alt="Disponível no F-Droid" class="h-12 md:h-16 scale-150 mx-6" />
+					<enhanced:img src="$lib/assets/f-droid-badge-pt.png" alt="Disponível no F-Droid" sizes="(min-width: 768px) 248px, 186px" class="h-12 md:h-16 w-auto scale-150 mx-6" />
 					<Badge class="absolute -top-2 -right-2" variant="secondary">Brevemente</Badge>
 				</div>
 			</div>
@@ -132,10 +122,10 @@
 					<div class="hidden sm:block absolute inset-y-0 right-0 w-16 z-10 pointer-events-none bg-gradient-to-l from-[#151515] to-transparent"></div>
 					<Carousel.Root plugins={[Autoplay({ stopOnInteraction: false })]} opts={{ loop: true }}>
 						<Carousel.Content>
-							{#each screenshots as screenshot}
+							{#each Object.entries(screenshots) as [_path, module], i}
 								<Carousel.Item class="flex justify-center">
 									<div class="max-w-[300px] mx-8 sm:mx-16">
-										<img src={screenshot} alt="Screenshot" class="rounded-3xl shadow-xl" />
+										<enhanced:img src={module.default} alt="Screenshot" sizes="300px" loading={i === 0 ? 'eager' : 'lazy'} class="rounded-3xl shadow-xl" />
 									</div>
 								</Carousel.Item>
 							{/each}
@@ -233,13 +223,13 @@
 					<div class="flex gap-4 my-4">
 						<a href="https://github.com/rodrigohpalmeirim" target="_blank">
 							<Avatar class="h-16 w-16" title="Rodrigo">
-								<AvatarImage src="https://avatars.githubusercontent.com/u/34187774" alt="Rodrigo" />
+								<AvatarImage src={avatarUrl('https://avatars.githubusercontent.com/u/34187774', 64)} alt="Rodrigo" />
 								<AvatarFallback class="text-foreground hover:no-underline">R</AvatarFallback>
 							</Avatar>
 						</a>
 						<a href="https://github.com/ttmx" target="_blank">
 							<Avatar class="h-16 w-16" title="Tiago">
-								<AvatarImage src="https://avatars.githubusercontent.com/u/12669467" alt="Tiago" />
+								<AvatarImage src={avatarUrl('https://avatars.githubusercontent.com/u/12669467', 64)} alt="Tiago" />
 								<AvatarFallback class="text-foreground hover:no-underline">T</AvatarFallback>
 							</Avatar>
 						</a>
@@ -442,7 +432,7 @@
 								{#each sponsors.slice(-23).reverse() as sponsor}
 									<a href={sponsor.profile} target="_blank" title={sponsor.handle} class="relative hover:z-10 transition-transform {sponsors.length > 15 ? '-ml-4 translate-x-2' : ''} hover:scale-110">
 										<Avatar class="h-12 w-12 bg-muted">
-											<AvatarImage src={sponsor.avatar} alt={sponsor.handle} />
+											<AvatarImage src={avatarUrl(sponsor.avatar, 48)} alt={sponsor.handle} loading="lazy" />
 											<AvatarFallback class="bg-muted">{sponsor.handle.charAt(0).toUpperCase()}</AvatarFallback>
 										</Avatar>
 									</a>
@@ -486,7 +476,7 @@
 									{#each codeContributors.slice(0, 15) as contributor}
 										<a href={contributor.html_url} target="_blank" title="{contributor.login} ({contributor.contributions} {(contributor.contributions === 1 ? 'contribuição' : 'contribuições')})" class="relative hover:z-10 transition-transform {codeContributors.length > 15 ? '-ml-4 translate-x-2' : ''} hover:scale-110">
 											<Avatar class="h-12 w-12 bg-muted">
-												<AvatarImage src={contributor.avatar_url} alt={contributor.login} />
+												<AvatarImage src={avatarUrl(contributor.avatar_url, 48)} alt={contributor.login} loading="lazy" />
 												<AvatarFallback class="bg-muted text-xs">{contributor.login.charAt(0).toUpperCase()}</AvatarFallback>
 											</Avatar>
 										</a>
@@ -510,7 +500,7 @@
 									{#each designContributors as contributor}
 										<a href={contributor.html_url} target="_blank" title="{contributor.login} ({contributor.contributions})" class="relative hover:z-10 transition-transform hover:scale-110">
 											<Avatar class="h-12 w-12 bg-muted">
-												<AvatarImage src={contributor.avatar_url} alt={contributor.login} />
+												<AvatarImage src={avatarUrl(contributor.avatar_url, 48)} alt={contributor.login} loading="lazy" />
 												<AvatarFallback class="bg-muted text-xs">{contributor.login.charAt(0).toUpperCase()}</AvatarFallback>
 											</Avatar>
 										</a>
@@ -543,7 +533,7 @@
 								{#each stargazers.slice(-23).reverse() as stargazer}
 									<a href={stargazer.html_url} target="_blank" title={stargazer.login} class="relative hover:z-10 transition-transform {repoStats.stars > 15 ? '-ml-4 translate-x-2' : ''} hover:scale-110">
 										<Avatar class="h-12 w-12 bg-muted">
-											<AvatarImage src={stargazer.avatar_url} alt={stargazer.login} />
+											<AvatarImage src={avatarUrl(stargazer.avatar_url, 48)} alt={stargazer.login} loading="lazy" />
 											<AvatarFallback class="bg-muted">{stargazer.login.charAt(0).toUpperCase()}</AvatarFallback>
 										</Avatar>
 									</a>
