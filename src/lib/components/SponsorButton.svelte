@@ -9,6 +9,6 @@
 <div class={cn('flex', className)}>
 	<Button variant="outline" size="sm" class="bg-transparent" href="https://github.com/sponsors/rt-evil-inc" target="_blank">
 		<HeartIcon class="w-4 h-4 stroke-[#db61a2]" />
-		Contribuir
+		Patrocinar
 	</Button>
 </div>
