@@ -22,6 +22,12 @@
 		name?: string;
 	}
 
+	interface Tester {
+		name: string;
+		avatar_url?: string;
+		html_url?: string;
+	}
+
 	interface Sponsor {
 		handle: string;
 		avatar: string;
@@ -38,6 +44,14 @@
 		avatar_url: 'https://mir-s3-cdn-cf.behance.net/user/115/29e4031136169129.645f9d7b634e6.png',
 		html_url: 'https://pt.linkedin.com/in/ines-t-freitas',
 		contributions: 'Design do logotipo',
+	}];
+
+	const testers: Tester[] = [{
+		name: 'Luís Rosa',
+		avatar_url: 'https://avatars.githubusercontent.com/u/37933797?v=4',
+		html_url: 'https://github.com/LLLFFF25',
+	}, {
+		name: 'Alexandre Rodrigues',
 	}];
 
 	let sponsors = $state<Sponsor[]>([]);
@@ -363,26 +377,39 @@
 							<div class="w-6 h-4 bg-muted rounded animate-pulse"></div>
 						</div>
 						<div class="flex flex-col items-center justify-center w-80 mx-auto grow">
-							<!-- Code Contributors Skeleton -->
-							<div class="mb-6">
-								<div class="flex items-center justify-center mb-3">
-									<div class="w-12 h-4 bg-muted rounded animate-pulse"></div>
+							<div class="flex flex-wrap justify-center gap-x-8">
+								<!-- Code Contributors Skeleton -->
+								<div class="mb-6">
+									<div class="flex items-center justify-center mb-3">
+										<div class="w-12 h-4 bg-muted rounded animate-pulse"></div>
+									</div>
+									<div class="flex flex-wrap items-center justify-center gap-2">
+										{#each Array(8) as _}
+											<div class="w-12 h-12 bg-muted rounded-full animate-pulse"></div>
+										{/each}
+									</div>
 								</div>
-								<div class="flex flex-wrap items-center justify-center gap-2">
-									{#each Array(8) as _}
-										<div class="w-12 h-12 bg-muted rounded-full animate-pulse"></div>
-									{/each}
+								<!-- Design Contributors Skeleton -->
+								<div class="mb-6">
+									<div class="flex items-center justify-center mb-3">
+										<div class="w-12 h-4 bg-muted rounded animate-pulse"></div>
+									</div>
+									<div class="flex flex-wrap items-center justify-center gap-2">
+										{#each Array(2) as _}
+											<div class="w-12 h-12 bg-muted rounded-full animate-pulse"></div>
+										{/each}
+									</div>
 								</div>
-							</div>
-							<!-- Design Contributors Skeleton -->
-							<div class="mb-6">
-								<div class="flex items-center justify-center mb-3">
-									<div class="w-12 h-4 bg-muted rounded animate-pulse"></div>
-								</div>
-								<div class="flex flex-wrap items-center justify-center gap-2">
-									{#each Array(2) as _}
-										<div class="w-12 h-12 bg-muted rounded-full animate-pulse"></div>
-									{/each}
+								<!-- Testers Skeleton -->
+								<div class="mb-6">
+									<div class="flex items-center justify-center mb-3">
+										<div class="w-12 h-4 bg-muted rounded animate-pulse"></div>
+									</div>
+									<div class="flex flex-wrap items-center justify-center gap-2">
+										{#each Array(2) as _}
+											<div class="w-12 h-12 bg-muted rounded-full animate-pulse"></div>
+										{/each}
+									</div>
 								</div>
 							</div>
 							<div class="flex justify-center">
@@ -462,49 +489,70 @@
 								Contribuidores
 							</h3>
 							<Badge variant="secondary" class="text-xs">
-								{codeContributors.length + designContributors.length}
+								{codeContributors.length + designContributors.length + testers.length}
 							</Badge>
 						</div>
 						<div class="flex flex-col items-center justify-center w-80 mx-auto grow">
 
-							<!-- Code Contributors Subsection -->
-							<div class="mb-6">
-								<div class="flex items-center justify-center mb-3">
-									<h4 class="text-sm font-semibold text-muted-foreground">Código</h4>
+							<div class="flex flex-wrap justify-center gap-x-8">
+								<!-- Code Contributors Subsection -->
+								<div class="mb-6">
+									<div class="flex items-center justify-center mb-3">
+										<h4 class="text-sm font-semibold text-muted-foreground">Código</h4>
+									</div>
+									<div class="flex flex-wrap items-center justify-center gap-2">
+										{#each codeContributors.slice(0, 15) as contributor}
+											<a href={contributor.html_url} target="_blank" title="{contributor.login} ({contributor.contributions} {(contributor.contributions === 1 ? 'contribuição' : 'contribuições')})" class="relative hover:z-10 transition-transform {codeContributors.length > 15 ? '-ml-4 translate-x-2' : ''} hover:scale-110">
+												<Avatar class="h-12 w-12 bg-muted">
+													<AvatarImage src={avatarUrl(contributor.avatar_url, 48)} alt={contributor.login} loading="lazy" />
+													<AvatarFallback class="bg-muted text-xs">{contributor.login.charAt(0).toUpperCase()}</AvatarFallback>
+												</Avatar>
+											</a>
+										{/each}
+										{#if codeContributors.length > 15}
+											<a href="https://github.com/rt-evil-inc/gira-mais/graphs/contributors" target="_blank" title="Ver todos os contribuidores de código" class="relative hover:z-10 transition-transform -ml-4 translate-x-2 hover:scale-110 !no-underline !text-foreground">
+												<Avatar class="h-12 w-12 bg-muted">
+													<AvatarFallback class="bg-muted text-xs">+{codeContributors.length - 15}</AvatarFallback>
+												</Avatar>
+											</a>
+										{/if}
+									</div>
 								</div>
-								<div class="flex flex-wrap items-center justify-center gap-2">
-									{#each codeContributors.slice(0, 15) as contributor}
-										<a href={contributor.html_url} target="_blank" title="{contributor.login} ({contributor.contributions} {(contributor.contributions === 1 ? 'contribuição' : 'contribuições')})" class="relative hover:z-10 transition-transform {codeContributors.length > 15 ? '-ml-4 translate-x-2' : ''} hover:scale-110">
-											<Avatar class="h-12 w-12 bg-muted">
-												<AvatarImage src={avatarUrl(contributor.avatar_url, 48)} alt={contributor.login} loading="lazy" />
-												<AvatarFallback class="bg-muted text-xs">{contributor.login.charAt(0).toUpperCase()}</AvatarFallback>
-											</Avatar>
-										</a>
-									{/each}
-									{#if codeContributors.length > 15}
-										<a href="https://github.com/rt-evil-inc/gira-mais/graphs/contributors" target="_blank" title="Ver todos os contribuidores de código" class="relative hover:z-10 transition-transform -ml-4 translate-x-2 hover:scale-110 !no-underline !text-foreground">
-											<Avatar class="h-12 w-12 bg-muted">
-												<AvatarFallback class="bg-muted text-xs">+{codeContributors.length - 15}</AvatarFallback>
-											</Avatar>
-										</a>
-									{/if}
-								</div>
-							</div>
 
-							<!-- Design Contributors Subsection -->
-							<div class="mb-6">
-								<div class="flex items-center justify-center mb-3">
-									<h4 class="text-sm font-semibold text-muted-foreground">Design</h4>
+								<!-- Design Contributors Subsection -->
+								<div class="mb-6">
+									<div class="flex items-center justify-center mb-3">
+										<h4 class="text-sm font-semibold text-muted-foreground">Design</h4>
+									</div>
+									<div class="flex flex-wrap items-center justify-center gap-2">
+										{#each designContributors as contributor}
+											<a href={contributor.html_url} target="_blank" title="{contributor.login} ({contributor.contributions})" class="relative hover:z-10 transition-transform hover:scale-110">
+												<Avatar class="h-12 w-12 bg-muted">
+													<AvatarImage src={avatarUrl(contributor.avatar_url, 48)} alt={contributor.login} loading="lazy" />
+													<AvatarFallback class="bg-muted text-xs">{contributor.login.charAt(0).toUpperCase()}</AvatarFallback>
+												</Avatar>
+											</a>
+										{/each}
+									</div>
 								</div>
-								<div class="flex flex-wrap items-center justify-center gap-2">
-									{#each designContributors as contributor}
-										<a href={contributor.html_url} target="_blank" title="{contributor.login} ({contributor.contributions})" class="relative hover:z-10 transition-transform hover:scale-110">
-											<Avatar class="h-12 w-12 bg-muted">
-												<AvatarImage src={avatarUrl(contributor.avatar_url, 48)} alt={contributor.login} loading="lazy" />
-												<AvatarFallback class="bg-muted text-xs">{contributor.login.charAt(0).toUpperCase()}</AvatarFallback>
-											</Avatar>
-										</a>
-									{/each}
+
+								<!-- Testers Subsection -->
+								<div class="mb-6">
+									<div class="flex items-center justify-center mb-3">
+										<h4 class="text-sm font-semibold text-muted-foreground">Testes</h4>
+									</div>
+									<div class="flex flex-wrap items-center justify-center gap-2">
+										{#each testers as tester}
+											<svelte:element this={tester.html_url ? 'a' : 'div'} href={tester.html_url} target={tester.html_url ? '_blank' : undefined} title={tester.name} class="relative hover:z-10 transition-transform hover:scale-110">
+												<Avatar class="h-12 w-12 bg-muted">
+													{#if tester.avatar_url}
+														<AvatarImage src={avatarUrl(tester.avatar_url, 48)} alt={tester.name} loading="lazy" />
+													{/if}
+													<AvatarFallback class="bg-muted text-xs">{tester.name.charAt(0).toUpperCase()}</AvatarFallback>
+												</Avatar>
+											</svelte:element>
+										{/each}
+									</div>
 								</div>
 							</div>
 
