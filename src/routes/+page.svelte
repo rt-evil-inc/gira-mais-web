@@ -587,11 +587,11 @@
 									</a>
 								{/each}
 								{#if repoStats.stars > stargazers.length}
-									<a href="https://github.com/rt-evil-inc/gira-mais/stargazers" target="_blank" title="Ver todas as estrelas" class="relative hover:z-10 transition-transform -ml-4 translate-x-2 hover:scale-110 !no-underline !text-foreground">
+									<div class="relative -ml-4 translate-x-2">
 										<Avatar class="h-12 w-12 bg-muted">
 											<AvatarFallback class="bg-muted text-xs">+{repoStats.stars - stargazers.length}</AvatarFallback>
 										</Avatar>
-									</a>
+									</div>
 								{/if}
 							</div>
 							<Button variant="secondary" href="https://github.com/rt-evil-inc/gira-mais" target="_blank">

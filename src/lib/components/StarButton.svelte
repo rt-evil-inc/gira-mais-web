@@ -28,7 +28,7 @@
 		Deixar uma estrela
 	</Button>
 	{#if stars > 0}
-		<Button variant="outline" size="sm" class="bg-transparent rounded-l-none border-l-0" href="https://github.com/rt-evil-inc/gira-mais/stargazers" target="_blank">
+		<Button variant="outline" size="sm" class="bg-transparent rounded-l-none border-l-0" href="https://github.com/rt-evil-inc/gira-mais" target="_blank">
 			{stars}
 		</Button>
 	{/if}
