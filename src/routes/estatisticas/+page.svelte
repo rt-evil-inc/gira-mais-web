@@ -7,6 +7,8 @@
 	import { getLocalTimeZone, today } from '@internationalized/date';
 	import Footer from '$lib/components/Footer.svelte';
 	import BikeRatingsChart from '$lib/components/BikeRatingsChart.svelte';
+	import GiraSystemStatus from '$lib/components/GiraSystemStatus.svelte';
+	import GiraServiceStatus from '$lib/components/GiraServiceStatus.svelte';
 
 	let interval = $state({
 		start: today(getLocalTimeZone()).add({ months: -1 }),
@@ -94,7 +96,7 @@
 	</header>
 
 	<!-- Summary Cards -->
-	<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+	<div id="utilizacao" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 scroll-mt-20">
 		<StatCard
 			title="Utilizadores"
 			value={totalUsers.value}
@@ -151,6 +153,9 @@
 			description="Avaliações das bicicletas distribuídas por classificação"
 		/>
 	</div>
+
+	<GiraServiceStatus />
+	<GiraSystemStatus bind:interval bind:groupBy bind:chartType />
 </div>
 
 <Footer class="bg-muted/40" />

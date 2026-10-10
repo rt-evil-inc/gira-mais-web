@@ -4,13 +4,15 @@
 	interface Props {
 		title: string;
 		value?: number;
+		/** Shown after the value as "value/total". */
+		total?: number;
 		loading?: boolean;
 		error?: string;
 		icon?: any;
 		description?: string;
 	}
 
-	let { title, value, loading = false, error, icon, description }: Props = $props();
+	let { title, value, total, loading = false, error, icon, description }: Props = $props();
 
 	function formatNumber(num: number): string {
 		return new Intl.NumberFormat('pt-PT').format(num);
@@ -40,7 +42,9 @@
 					<div class="text-3xl font-bold text-destructive mb-2">Erro</div>
 					<p class="text-xs text-muted-foreground/70">{error}</p>
 				{:else if value !== undefined}
-					<div class="text-4xl font-bold mb-2">{formatNumber(value)}</div>
+					<div class="text-4xl font-bold mb-2">
+						{formatNumber(value)}{#if total !== undefined}<span class="text-2xl font-semibold text-muted-foreground/70">/{formatNumber(total)}</span>{/if}
+					</div>
 					{#if description}
 						<p class="text-sm text-muted-foreground">{description}</p>
 					{/if}

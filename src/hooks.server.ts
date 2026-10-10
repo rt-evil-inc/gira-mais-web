@@ -1,7 +1,10 @@
 import { env } from '$env/dynamic/private';
-import type { Handle } from '@sveltejs/kit';
+import { building, dev } from '$app/environment';
+import type { Handle, ServerInit } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { integrityTokens } from '$lib/server/db/schema';
+import { startGiraSystemPoller } from '$lib/server/gira-system/poller';
+import { startStatusProbes } from '$lib/server/gira-status/probes';
 import { and, lt, ne } from 'drizzle-orm';
 
 // Token cleanup interval in milliseconds
@@ -11,6 +14,15 @@ const CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
 if (!env.ADMIN_LOGIN) {
 	console.warn('⚠️ WARNING: ADMIN_LOGIN environment variable is not set. The message update endpoint will not work without it.');
 }
+
+export const init: ServerInit = () => {
+	if (building) return;
+	// On in production; development servers share a database, so they only poll when asked to.
+	const polling = env.GIRA_POLLING ? env.GIRA_POLLING === 'true' : !dev;
+	if (!polling) return;
+	startGiraSystemPoller({ intervalMinutes: Number(env.GIRA_POLLING_INTERVAL_MINUTES) || 5 });
+	startStatusProbes();
+};
 
 // Add any other hook handlers as needed
 export async function handle({

@@ -75,3 +75,7 @@ Para executar a aplicação em modo de desenvolvimento:
 - `NODE_ENV` - Ambiente de execução (`development` ou `production`)
 - `INITIAL_DATE` - Data inicial para os dados estatísticos
 - `GITHUB_TOKEN` - Token do GitHub para ler dados públicos do repositório (listar quem deu estrela exige autenticação). Tem de ser um token clássico com o âmbito `public_repo`, visto que os tokens *fine-grained* não conseguem listar quem deu estrela
+- `GIRA_POLLING` - Recolher o estado do sistema GIRA (estações, docas e bicicletas) e verificar a cada 5 minutos se os servidores da GIRA respondem, para a página de estatísticas (`true` ou `false`). Por omissão só está ativo em produção; só um servidor por base de dados deve recolher
+- `GIRA_POLLING_INTERVAL_MINUTES` - Intervalo entre recolhas, em minutos (por omissão 5)
+- `GIRA_SUSPICIOUS_DOCK_HOURS` - Horas sem bicicletas a partir das quais uma doca que o sistema indica como livre conta como suspeita (por omissão 168, 7 dias)
+- `GIRA_IDLE_STATION_HOURS` - Horas sem nenhuma alteração (nenhuma bicicleta a chegar ou a sair) a partir das quais uma estação em serviço conta como sem atividade (por omissão 48)
