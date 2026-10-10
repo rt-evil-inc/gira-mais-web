@@ -7,6 +7,14 @@
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
 
+	/** The statistics page's sections, linked from the bar while on it. */
+	const STATISTICS_SECTIONS = [
+		{ id: 'utilizacao', label: 'Utilização da Gira+' },
+		{ id: 'servicos', label: 'Serviços GIRA' },
+		{ id: 'sistema', label: 'Sistema GIRA' },
+	];
+	const sections = $derived(page.route.id === '/estatisticas' ? STATISTICS_SECTIONS : []);
+
 	let admin = $state(false);
 	if (browser) {
 		admin = localStorage.getItem('admin') === 'true';
@@ -22,6 +30,13 @@
 			<img src="/icon.svg" alt="Gira+" class="h-6 w-6 mr-2" />
 			<span class="font-bold sm:inline-block">Gira+</span>
 		</a>
+		{#if sections.length}
+			<nav class="hidden lg:flex gap-1" aria-label="Secções da página">
+				{#each sections as section (section.id)}
+					<Button variant="ghost" size="sm" href="#{section.id}" class="text-muted-foreground">{section.label}</Button>
+				{/each}
+			</nav>
+		{/if}
 		<div class="flex flex-1 items-center justify-end gap-1">
 			{#if page.route.id !== '/'}
 				<LightSwitch />
@@ -54,6 +69,11 @@
 							<Sheet.Close class="text-left">
 								<a href="/estatisticas" class="text-lg font-medium">Estatísticas</a>
 							</Sheet.Close>
+							{#each sections as section (section.id)}
+								<Sheet.Close class="-mt-2 pl-4 text-left">
+									<a href="#{section.id}" class="text-muted-foreground">{section.label}</a>
+								</Sheet.Close>
+							{/each}
 							{#if admin}
 								<Sheet.Close class="text-left">
 									<a href="/admin" class="text-lg font-medium">Admin</a>
