@@ -72,7 +72,7 @@ function toBikeRow(id: number, bike: FirestoreBike, sourceUpdatedAt: Date, now: 
 		tripErrorCode: bike.TripErrorCode ?? null,
 		battery: bike.BatteryPercentage ?? null,
 		reasons,
-		status: bikeStatus({ available: bike.IsAvaliable, booked: bike.IsBooked, tripState: bike.TripVehicleState ?? null, docked: dock != null, reasons }),
+		status: bikeStatus({ available: bike.IsAvaliable, booked: bike.IsBooked, docked: dock != null, reasons }),
 		sourceUpdatedAt,
 		lastSeenAt: now,
 		missingSince: null,

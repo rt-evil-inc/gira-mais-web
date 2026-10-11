@@ -150,7 +150,6 @@ export const REASON_LABELS: Record<string, string> = {
 export interface BikeState {
 	available: boolean;
 	booked: boolean;
-	tripState: string | null;
 	docked: boolean;
 	reasons: string[];
 }
@@ -158,9 +157,12 @@ export interface BikeState {
 /**
  * One status per bike, so the statuses add up to the fleet: a trip wins over a booking, which wins over the dock.
  * A docked bike the system won't let riders unlock is unavailable, whatever the reason.
+ *
+ * A trip is the server's "Has active trip", not `TripVehicleState`: that is often left RUNNING after the trip, on
+ * ~270 bikes in October 2026, most of them at the workshop (999 - Oficina) or flagged available, and days old.
  */
 export function bikeStatus(bike: BikeState): BikeStatus {
-	if (bike.tripState === 'RUNNING' || bike.tripState === 'WAITING_FOR_START' || bike.reasons.includes('Has active trip')) return 'in_trip';
+	if (bike.reasons.includes('Has active trip')) return 'in_trip';
 	if (bike.booked || bike.reasons.includes('Has booking ticket')) return 'booked';
 	if (!bike.docked) return 'outside';
 	return bike.available ? 'available' : 'unavailable';

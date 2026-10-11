@@ -159,7 +159,7 @@ export const giraBikes = pgTable(
 		dock: text('dock'),
 		available: boolean('available').notNull(),
 		booked: boolean('booked').notNull(),
-		/** LOCKED, RUNNING or WAITING_FOR_START. */
+		/** LOCKED, RUNNING or WAITING_FOR_START; often left RUNNING after a trip, so not what makes a bike in_trip. */
 		tripState: text('trip_state'),
 		tripErrorCode: integer('trip_error_code'),
 		battery: integer('battery'),
