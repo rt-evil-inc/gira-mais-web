@@ -5,6 +5,7 @@
 	import StatCard from '$lib/components/StatCard.svelte';
 	import StatisticsControls from '$lib/components/StatisticsControls.svelte';
 	import SystemStatusChart from '$lib/components/SystemStatusChart.svelte';
+	import BikeRatingsChart from '$lib/components/BikeRatingsChart.svelte';
 	import StationList from '$lib/components/StationList.svelte';
 	import SystemMissingList from '$lib/components/SystemMissingList.svelte';
 	import { formatHours, stationInService, type StatusSeries, type SystemCurrentState, type SystemKind } from '$lib/gira-system';
@@ -165,6 +166,11 @@
 				unit={chart.unit}
 			/>
 		{/each}
+
+		<BikeRatingsChart {interval} {groupBy}
+			title="Avaliações de Bicicletas"
+			description="Avaliações das bicicletas feitas na app Gira+, distribuídas por classificação"
+		/>
 
 		<StationList stations={current?.stations ?? []} loading={currentLoading} error={currentError} {suspiciousAfterHours} />
 

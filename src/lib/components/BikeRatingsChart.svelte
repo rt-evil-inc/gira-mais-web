@@ -10,9 +10,19 @@
 	import 'chartjs-adapter-date-fns';
 	import { mode } from 'mode-watcher';
 	import Spinner from '$lib/components/Spinner.svelte';
-	import { CHART_CARD, NARROW_CHART_WIDTH, NARROW_LEGEND_LABELS } from '$lib/charts';
+	import RatingFace from '$lib/components/RatingFace.svelte';
+	import { CHART_CARD, NARROW_CHART_WIDTH } from '$lib/charts';
 
 	Chart.register(TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
+
+	// Colors for each rating (1-5 stars) - using a gradient from red to green
+	const RATING_COLORS = [
+		colors.red[500], // 1 star
+		colors.orange[500], // 2 stars
+		colors.yellow[500], // 3 stars
+		colors.lime[500], // 4 stars
+		colors.green[500], // 5 stars
+	];
 
 	let { interval, groupBy, title, description } = $props();
 	let chartInstance: Chart<keyof ChartTypeRegistry, { x: Date; y: number }[]> | null = null;
@@ -22,6 +32,8 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let normalized = $state(true);
+	/** Ratings hidden from the legend, by label, so they stay hidden when the chart is redrawn. */
+	let hidden = $state<string[]>([]);
 	let chartData = $state<Array<{
 		label: string;
 		data: Array<{ timestamp: string; count: number }>;
@@ -68,23 +80,21 @@
 		}
 	}
 
+	function toggle(label: string, index: number) {
+		const show = hidden.includes(label);
+		hidden = show ? hidden.filter(other => other !== label) : [...hidden, label];
+		chartInstance?.setDatasetVisibility(index, show);
+		chartInstance?.update();
+	}
+
 	// Create or update the chart based on current data
 	function createOrUpdateChart() {
 		if (!chartCanvas) return;
 
 		const style = getComputedStyle(document.body);
 
-		// Colors for each rating (1-5 stars) - using a gradient from red to green
-		const ratingColors = [
-			colors.red[500], // 1 star
-			colors.orange[500], // 2 stars
-			colors.yellow[500], // 3 stars
-			colors.lime[500], // 4 stars
-			colors.green[500], // 5 stars
-		];
-
 		const datasets: ChartDataset<'line', { x: Date; y: number }[]>[] = chartData.map((ratingData, index) => {
-			const color = ratingColors[index % ratingColors.length];
+			const color = RATING_COLORS[index % RATING_COLORS.length];
 			let data: { x: Date; y: number }[];
 
 			if (normalized) {
@@ -119,6 +129,7 @@
 			return {
 				label: ratingData.label,
 				data: data,
+				hidden: hidden.includes(ratingData.label),
 				backgroundColor: `${color}B3`, // 70% opacity (B3 in hex)
 				borderColor: color,
 				borderWidth: 1,
@@ -147,18 +158,8 @@
 				responsive: true,
 				maintainAspectRatio: false,
 				plugins: {
-					legend: {
-						display: true,
-						position: 'top',
-						labels: {
-							font: {
-								family: 'Inter',
-							},
-							usePointStyle: true,
-							padding: 20,
-							...narrow ? NARROW_LEGEND_LABELS : {},
-						},
-					},
+					// Drawn below the header instead, with the faces the app rates trips with.
+					legend: { display: false },
 					tooltip: {
 						mode: 'index',
 						intersect: false,
@@ -295,6 +296,22 @@
 	</Card.CardHeader>
 
 	<Card.CardContent class={CHART_CARD.content}>
+		{#if !loading && !error && chartData.length}
+			<div class="mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1 sm:gap-x-5">
+				{#each chartData as series, index (series.label)}
+					{@const off = hidden.includes(series.label)}
+					<button
+						type="button"
+						class="flex items-center gap-1.5 text-xs text-muted-foreground transition-opacity sm:text-sm {off ? 'line-through opacity-50' : ''}"
+						aria-pressed={!off}
+						onclick={() => toggle(series.label, index)}
+					>
+						<span style:color={RATING_COLORS[index % RATING_COLORS.length]}><RatingFace rating={index + 1} class="h-4 w-4 sm:h-5 sm:w-5" /></span>
+						{series.label}
+					</button>
+				{/each}
+			</div>
+		{/if}
 		<div class="h-64 sm:h-80 relative" bind:clientWidth={width}>
 			{#if loading}
 				<div class="absolute inset-0 flex items-center justify-center">

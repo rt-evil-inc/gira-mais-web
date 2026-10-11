@@ -3,10 +3,9 @@
 	import BarChart from '$lib/components/BarChart.svelte';
 	import StatisticsControls from '$lib/components/StatisticsControls.svelte';
 	import StatCard from '$lib/components/StatCard.svelte';
-	import { ChartLine, Users, Route } from '@lucide/svelte';
+	import { ChartLine, Users, Route, UserPlus } from '@lucide/svelte';
 	import { getLocalTimeZone, today } from '@internationalized/date';
 	import Footer from '$lib/components/Footer.svelte';
-	import BikeRatingsChart from '$lib/components/BikeRatingsChart.svelte';
 	import GiraSystemStatus from '$lib/components/GiraSystemStatus.svelte';
 	import GiraServiceStatus from '$lib/components/GiraServiceStatus.svelte';
 
@@ -20,6 +19,7 @@
 	// Summary statistics state
 	let totalUsers = $state<{value?: number, loading: boolean, error?: string}>({ loading: true });
 	let totalTrips = $state<{value?: number, loading: boolean, error?: string}>({ loading: true });
+	let recent = $state<{value?: {users: number, newUsers: number, trips: number}, loading: boolean, error?: string}>({ loading: true });
 
 	// Fetch monthly unique users (last month)
 	async function fetchTotalUsers() {
@@ -65,10 +65,28 @@
 		}
 	}
 
+	// Fetch the last 7 days' users, new users and trips
+	async function fetchRecent() {
+		recent.loading = true;
+		recent.error = undefined;
+
+		try {
+			const response = await fetch('/api/statistics/recent');
+			if (!response.ok) throw new Error('Failed to fetch recent statistics');
+
+			recent.value = await response.json();
+		} catch (error) {
+			recent.error = error instanceof Error ? error.message : 'Erro desconhecido';
+		} finally {
+			recent.loading = false;
+		}
+	}
+
 	// Fetch data on mount
 	$effect(() => {
 		fetchTotalUsers();
 		fetchTotalTrips();
+		fetchRecent();
 	});
 </script>
 
@@ -96,7 +114,7 @@
 	</header>
 
 	<!-- Summary Cards -->
-	<div id="utilizacao" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8 scroll-mt-20">
+	<div id="utilizacao" class="grid grid-cols-2 gap-2 sm:gap-6 mb-2 sm:mb-6 scroll-mt-20">
 		<StatCard
 			title="Utilizadores"
 			value={totalUsers.value}
@@ -112,6 +130,35 @@
 			error={totalTrips.error}
 			icon={Route}
 			description="Número total de viagens registadas"
+		/>
+	</div>
+	<div class="grid grid-cols-3 gap-2 sm:gap-6 mb-8">
+		<StatCard
+			title="Utilizadores (7&nbsp;dias)"
+			value={recent.value?.users}
+			loading={recent.loading}
+			error={recent.error}
+			compact
+			icon={Users}
+			description="Dispositivos em que a aplicação foi utilizada"
+		/>
+		<StatCard
+			title="Novos utilizadores (7&nbsp;dias)"
+			value={recent.value?.newUsers}
+			loading={recent.loading}
+			error={recent.error}
+			compact
+			icon={UserPlus}
+			description="Dispositivos em que a aplicação foi utilizada pela primeira vez"
+		/>
+		<StatCard
+			title="Viagens (7&nbsp;dias)"
+			value={recent.value?.trips}
+			loading={recent.loading}
+			error={recent.error}
+			compact
+			icon={Route}
+			description="Viagens registadas"
 		/>
 	</div>
 
@@ -146,12 +193,6 @@
 				description="Número de viagens ao longo do tempo"
 			/>
 		{/if}
-	</div>
-	<div class="mt-10 sm:mt-4">
-		<BikeRatingsChart {interval} {groupBy}
-			title="Avaliações de Bicicletas"
-			description="Avaliações das bicicletas distribuídas por classificação"
-		/>
 	</div>
 
 	<GiraServiceStatus />

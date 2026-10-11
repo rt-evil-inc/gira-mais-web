@@ -7,7 +7,7 @@
 	import { CHART_CARD } from '$lib/charts';
 	import { COLORS } from '$lib/gira-system';
 	import { formatChange, formatNumber, formatPercent, rangeQuery, RATING_LABELS, type TripsResponse } from '$lib/admin';
-	import RatingFace from '$lib/components/admin/RatingFace.svelte';
+	import RatingFace from '$lib/components/RatingFace.svelte';
 	import type { DateRange } from 'bits-ui';
 	import { mode } from 'mode-watcher';
 
