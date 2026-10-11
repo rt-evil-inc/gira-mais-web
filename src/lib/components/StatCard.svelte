@@ -20,7 +20,7 @@
 </script>
 
 <Card.Root class="h-full">
-	<Card.CardContent class="p-6">
+	<Card.CardContent class="p-4 sm:p-6">
 		<div class="flex items-center justify-between">
 			<div class="flex-1">
 				<div class="flex items-center gap-2 mb-3">

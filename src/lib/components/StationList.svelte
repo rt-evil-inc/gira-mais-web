@@ -7,10 +7,12 @@
 	import Spinner from '$lib/components/Spinner.svelte';
 	import StationRow from '$lib/components/StationRow.svelte';
 	import { listedStationOccupancy, type SystemStation } from '$lib/gira-system';
+	import { CHART_CARD } from '$lib/charts';
 
 	let { stations, loading, error, suspiciousAfterHours }: { stations: SystemStation[]; loading: boolean; error: string | null; suspiciousAfterHours: number } = $props();
 
 	const PAGE_SIZE = 25;
+	const FILTERS = [['all', 'Todas'], ['empty', 'Vazias'], ['full', 'Cheias'], ['idle', 'Suspeitas'], ['out_of_service', 'Indisponíveis']];
 
 	let query = $state('');
 	let filter = $state('all');
@@ -54,31 +56,35 @@
 	});
 </script>
 
-<Card.Root id="estacoes" class="scroll-mt-20">
-	<Card.CardHeader>
+<Card.Root id="estacoes" class="scroll-mt-20 {CHART_CARD.root}">
+	<Card.CardHeader class={CHART_CARD.header}>
 		<Card.CardTitle>Estações</Card.CardTitle>
 		<Card.CardDescription>
 			Estado atual das docas de cada estação; abre uma estação para ver as bicicletas que lá estão. O sistema só indica o
 			número das docas que têm uma bicicleta; das restantes indica quantas estão livres, e as que sobram estão indisponíveis.
 		</Card.CardDescription>
 	</Card.CardHeader>
-	<Card.CardContent>
+	<Card.CardContent class={CHART_CARD.content}>
 		<div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center">
 			<div class="relative flex-1">
 				<Search class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 				<Input bind:value={query} placeholder="Procurar por estação, morada ou bicicleta (ex: 253, Saldanha, E0566)" class="pl-8" aria-label="Procurar estações" />
 			</div>
 			<div class="flex flex-wrap items-center gap-3">
-				<Tabs.Root value={filter} onValueChange={value => { filter = value; }}>
+				<Tabs.Root value={filter} onValueChange={value => { filter = value; }} class="hidden sm:block">
 					<Tabs.TabsList>
-						<Tabs.TabsTrigger value="all">Todas</Tabs.TabsTrigger>
-						<Tabs.TabsTrigger value="empty">Vazias</Tabs.TabsTrigger>
-						<Tabs.TabsTrigger value="full">Cheias</Tabs.TabsTrigger>
-						<Tabs.TabsTrigger value="idle">Suspeitas</Tabs.TabsTrigger>
-						<Tabs.TabsTrigger value="out_of_service">Indisponíveis</Tabs.TabsTrigger>
+						{#each FILTERS as [value, label] (value)}
+							<Tabs.TabsTrigger {value}>{label}</Tabs.TabsTrigger>
+						{/each}
 					</Tabs.TabsList>
 				</Tabs.Root>
-				<select bind:value={sort} aria-label="Ordenar estações" class="h-9 rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+				<!-- The five filters don't fit across a phone, so there they're a menu beside the sorting. -->
+				<select bind:value={filter} aria-label="Filtrar estações" class="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:hidden">
+					{#each FILTERS as [value, label] (value)}
+						<option {value}>{label}</option>
+					{/each}
+				</select>
+				<select bind:value={sort} aria-label="Ordenar estações" class="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:flex-none">
 					<option value="number">Por número</option>
 					<option value="available">Mais bicicletas disponíveis</option>
 					<option value="free">Mais docas livres</option>

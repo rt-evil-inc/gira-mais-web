@@ -8,6 +8,7 @@
 	import { mode } from 'mode-watcher';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import annotationPlugin from 'chartjs-plugin-annotation';
+	import { CHART_CARD, NARROW_CHART_WIDTH } from '$lib/charts';
 
 	Chart.register(TimeScale, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, annotationPlugin);
 
@@ -16,6 +17,8 @@
 	let isSmallInterval = $derived(interval?.start?.add({ days: 1 }) >= interval?.end);
 	let chartInstance: Chart<keyof ChartTypeRegistry, { x: Date; y: number }[]> | null = null;
 	let chartCanvas = $state<HTMLCanvasElement | null>(null);
+	let width = $state(0);
+	const narrow = $derived(width > 0 && width < NARROW_CHART_WIDTH);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let chartData = $state<{timestamp: string; count: number}[]>([]);
@@ -140,6 +143,7 @@
 				font: {
 					weight: 'bold';
 					family: string;
+					size: number;
 				};
 				padding: number;
 			};
@@ -168,8 +172,9 @@
 							font: {
 								weight: 'bold',
 								family: 'Inter',
+								size: narrow ? 10 : 12,
 							},
-							padding: 4,
+							padding: narrow ? 2 : 4,
 						},
 					});
 				}
@@ -226,7 +231,7 @@
 							display: false,
 						},
 						title: {
-							display: true,
+							display: !narrow,
 							text: 'Tempo',
 							font: {
 								family: 'Inter',
@@ -236,9 +241,13 @@
 							font: {
 								family: 'Inter',
 							},
+							maxRotation: narrow ? 0 : 50,
+							autoSkipPadding: narrow ? 12 : 3,
 							callback: value => {
 								const date = new Date(value);
-								if (isSmallInterval) {
+								if (isSmallInterval && narrow) {
+									return date.toLocaleString('pt-PT', { hour: 'numeric', minute: '2-digit' });
+								} else if (isSmallInterval) {
 									return date.toLocaleString('pt-PT', { hour: 'numeric', minute: '2-digit' }) + ' - ' + new Date(date.getTime() + 3600000).toLocaleString('pt-PT', { hour: 'numeric', minute: '2-digit' });
 								} else {
 									return date.toLocaleString('pt-PT', { month: 'short', day: 'numeric' });
@@ -255,7 +264,7 @@
 							},
 						},
 						title: {
-							display: true,
+							display: !narrow,
 							text: title,
 							font: {
 								family: 'Inter',
@@ -278,16 +287,16 @@
 	});
 </script>
 
-<Card.Root class="h-full">
-	<Card.CardHeader>
+<Card.Root class="h-full {CHART_CARD.root}">
+	<Card.CardHeader class={CHART_CARD.header}>
 		<Card.CardTitle>{title}</Card.CardTitle>
 		<Card.CardDescription>
 			{description}
 		</Card.CardDescription>
 	</Card.CardHeader>
 
-	<Card.CardContent>
-		<div class="h-80 relative">
+	<Card.CardContent class={CHART_CARD.content}>
+		<div class="h-60 sm:h-80 relative" bind:clientWidth={width}>
 			{#if loading}
 				<div class="absolute inset-0 flex items-center justify-center">
 					<Spinner />

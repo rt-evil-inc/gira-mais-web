@@ -6,6 +6,7 @@
 	import Spinner from '$lib/components/Spinner.svelte';
 	import ServiceHoursChart from '$lib/components/ServiceHoursChart.svelte';
 	import { COLORS } from '$lib/gira-system';
+	import { CHART_CARD } from '$lib/charts';
 	import { REPORT_THRESHOLDS, SERVICES, type ServiceStatus, type StatusDay, type StatusResponse } from '$lib/gira-status';
 
 	const DAYS = 90;
@@ -119,7 +120,7 @@
 		{@const Banner = STATUS[overall].icon}
 		<Card.Root>
 			<Card.CardContent class="p-0">
-				<div class="flex items-center gap-3 border-b px-6 py-4">
+				<div class="flex items-center gap-3 border-b px-4 py-4 sm:px-6">
 					<Banner class="h-6 w-6 shrink-0" style="color: {colorOf(overall)}" />
 					<div class="min-w-0 flex-1">
 						<p class="font-semibold">
@@ -137,7 +138,7 @@
 					{@const definition = SERVICES[service.id]}
 					{@const days = paddedDays(service)}
 					{@const Icon = STATUS[service.status].icon}
-					<div class="border-b px-6 py-5 last:border-0">
+					<div class="border-b px-4 py-5 last:border-0 sm:px-6">
 						<div class="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
 							<div class="min-w-0">
 								<h3 class="font-semibold">{definition.label}</h3>
@@ -198,8 +199,8 @@
 			</Card.CardContent>
 		</Card.Root>
 
-		<Card.Root class="mt-4">
-			<Card.CardHeader>
+		<Card.Root class="mt-8 sm:mt-4 {CHART_CARD.root}">
+			<Card.CardHeader class={CHART_CARD.header}>
 				<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 					<div>
 						<Card.CardTitle>Últimos 7 dias</Card.CardTitle>
@@ -217,7 +218,7 @@
 					</Tabs.Root>
 				</div>
 			</Card.CardHeader>
-			<Card.CardContent>
+			<Card.CardContent class={CHART_CARD.content}>
 				{@const service = data.services.find(candidate => candidate.id === detail)}
 				{#if service}
 					<ServiceHoursChart hours={service.hours} reported={SERVICES[service.id].reported} />

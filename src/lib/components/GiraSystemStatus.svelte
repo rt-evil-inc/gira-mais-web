@@ -116,7 +116,7 @@
 		</p>
 	</header>
 
-	<div class="mb-6 grid grid-cols-1 gap-6 md:grid-cols-3">
+	<div class="mb-6 grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3">
 		<StatCard
 			title="Estações em serviço"
 			value={stationsWorking}
@@ -151,7 +151,7 @@
 		<StatisticsControls bind:interval bind:groupBy bind:chartType />
 	</div>
 
-	<div class="flex flex-col gap-4">
+	<div class="flex flex-col gap-10 sm:gap-4">
 		{#each charts as chart (chart.kind)}
 			<SystemStatusChart
 				kind={chart.kind}

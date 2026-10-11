@@ -2,6 +2,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { statusLabel, type MissingBike, type SystemStation } from '$lib/gira-system';
+	import { CHART_CARD } from '$lib/charts';
 
 	let { stations, bikes, since }: { stations: SystemStation[]; bikes: MissingBike[]; since: string | null } = $props();
 
@@ -30,42 +31,37 @@
 	}
 </script>
 
-<Card.Root>
-	<Card.CardHeader>
+<Card.Root class={CHART_CARD.root}>
+	<Card.CardHeader class={CHART_CARD.header}>
 		<Card.CardTitle>Desaparecidas do sistema</Card.CardTitle>
 		<Card.CardDescription>
 			Estações e bicicletas que o sistema deixou de devolver, com o último sítio e momento em que foram vistas.
 		</Card.CardDescription>
 	</Card.CardHeader>
-	<Card.CardContent>
+	<Card.CardContent class={CHART_CARD.content}>
 		{#if !rows.length}
 			<p class="py-4 text-center text-sm text-muted-foreground">
 				Nenhuma estação ou bicicleta desapareceu{since ? ` desde ${formatDate(since)}` : ''}.
 			</p>
 		{:else}
-			<div class="overflow-x-auto">
-				<table class="w-full text-sm">
-					<thead>
-						<tr class="border-b text-left text-xs text-muted-foreground">
-							<th class="py-2 pr-4 font-medium">Tipo</th>
-							<th class="py-2 pr-4 font-medium">Nome</th>
-							<th class="py-2 pr-4 font-medium">Último local</th>
-							<th class="py-2 pr-4 font-medium">Visto pela última vez</th>
-							<th class="py-2 font-medium">Desaparecida desde</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each rows.slice(0, shown) as row}
-							<tr class="border-b last:border-0">
-								<td class="py-2 pr-4 text-muted-foreground">{row.kind}</td>
-								<td class="py-2 pr-4 font-medium">{row.name}</td>
-								<td class="py-2 pr-4 text-muted-foreground">{row.where}</td>
-								<td class="py-2 pr-4 tabular-nums">{formatDate(row.lastSeenAt)}</td>
-								<td class="py-2 tabular-nums">{formatDate(row.missingSince)}</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
+			<!-- A table from md up; on a phone each row stacks, with the dates labelled, framed since the card isn't. -->
+			<div class="rounded-lg border px-3 text-sm sm:rounded-none sm:border-0 sm:px-0" role="table">
+				<div class="hidden grid-cols-[5rem_minmax(0,1fr)_minmax(0,1.5fr)_10rem_10rem] gap-x-4 border-b py-2 text-xs font-medium text-muted-foreground md:grid" role="row">
+					<span role="columnheader">Tipo</span>
+					<span role="columnheader">Nome</span>
+					<span role="columnheader">Último local</span>
+					<span role="columnheader">Visto pela última vez</span>
+					<span role="columnheader">Desaparecida desde</span>
+				</div>
+				{#each rows.slice(0, shown) as row}
+					<div class="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-0.5 border-b py-2 last:border-0 md:grid-cols-[5rem_minmax(0,1fr)_minmax(0,1.5fr)_10rem_10rem]" role="row">
+						<span class="col-start-2 row-start-1 text-xs text-muted-foreground md:col-start-auto md:row-start-auto md:text-sm" role="cell">{row.kind}</span>
+						<span class="col-start-1 row-start-1 font-medium md:col-start-auto md:row-start-auto" role="cell">{row.name}</span>
+						<span class="col-span-2 text-muted-foreground md:col-span-1" role="cell">{row.where}</span>
+						<span class="col-span-2 text-xs tabular-nums md:col-span-1 md:text-sm" role="cell"><span class="text-muted-foreground md:hidden">Visto pela última vez: </span>{formatDate(row.lastSeenAt)}</span>
+						<span class="col-span-2 text-xs tabular-nums md:col-span-1 md:text-sm" role="cell"><span class="text-muted-foreground md:hidden">Desaparecida desde: </span>{formatDate(row.missingSince)}</span>
+					</div>
+				{/each}
 			</div>
 			{#if rows.length > shown}
 				<div class="mt-4 flex justify-center">

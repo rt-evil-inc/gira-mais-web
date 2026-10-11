@@ -87,16 +87,16 @@
 	<meta name="twitter:image" content="https://gira-mais.app/card.png" />
 </svelte:head>
 
-<div class="container min-h-screen mx-auto py-12 px-4 max-w-6xl">
-	<header class="mb-10">
+<div class="container min-h-screen mx-auto py-8 sm:py-12 px-4 max-w-6xl">
+	<header class="mb-8 sm:mb-10">
 		<div class="flex items-center mb-4">
-			<ChartLine class="min-h-10 min-w-10 text-primary" />
-			<h1 class="text-3xl font-bold ml-2">Estatísticas de Utilização da Gira+</h1>
+			<ChartLine class="h-8 w-8 shrink-0 text-primary sm:h-10 sm:w-10" />
+			<h1 class="text-2xl font-bold ml-2 sm:text-3xl">Estatísticas de Utilização da Gira+</h1>
 		</div>
 	</header>
 
 	<!-- Summary Cards -->
-	<div id="utilizacao" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 scroll-mt-20">
+	<div id="utilizacao" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8 scroll-mt-20">
 		<StatCard
 			title="Utilizadores"
 			value={totalUsers.value}
@@ -134,7 +134,7 @@
 			/>
 		{/if}
 	</div>
-	<div class="mt-4">
+	<div class="mt-10 sm:mt-4">
 		{#if chartType === 'area'}
 			<AreaChart endpoint="trips" {interval} {groupBy}
 				title="Viagens"
@@ -147,7 +147,7 @@
 			/>
 		{/if}
 	</div>
-	<div class="mt-4">
+	<div class="mt-10 sm:mt-4">
 		<BikeRatingsChart {interval} {groupBy}
 			title="Avaliações de Bicicletas"
 			description="Avaliações das bicicletas distribuídas por classificação"

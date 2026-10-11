@@ -4,6 +4,7 @@
 	import 'chartjs-adapter-date-fns';
 	import { mode } from 'mode-watcher';
 	import { COLORS } from '$lib/gira-system';
+	import { NARROW_CHART_WIDTH } from '$lib/charts';
 	import { FAILURE_KINDS, REPORT_THRESHOLDS, judgedByReports, type FailureKind, type StatusHour } from '$lib/gira-status';
 
 	/** `reported`: whether users' failure reports judge the service; if not, only its checks are charted. */
@@ -11,6 +12,8 @@
 
 	let failuresCanvas = $state<HTMLCanvasElement | null>(null);
 	let latencyCanvas = $state<HTMLCanvasElement | null>(null);
+	let width = $state(0);
+	const narrow = $derived(width > 0 && width < NARROW_CHART_WIDTH);
 	type Point = { x: number; y: number | null };
 	let failuresChart: Chart<'bar' | 'line', Point[]> | null = null;
 	let latencyChart: Chart<'line', Point[]> | null = null;
@@ -19,7 +22,7 @@
 	const judged = (hour: StatusHour) => judgedByReports(hour.reports);
 
 	$effect(() => {
-		void [hours, failuresCanvas, latencyCanvas, $mode];
+		void [hours, failuresCanvas, latencyCanvas, $mode, narrow];
 		draw();
 	});
 
@@ -48,7 +51,8 @@
 				color: muted,
 				font: { family: 'Inter' },
 				maxRotation: 0,
-				callback: (value: string | number) => new Date(value).toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric' }),
+				// A phone has no room for the weekday.
+				callback: (value: string | number) => new Date(value).toLocaleDateString('pt-PT', narrow ? { day: 'numeric', month: 'numeric' } : { weekday: 'short', day: 'numeric' }),
 			},
 			min: Date.parse(hours[0]?.hour ?? ''),
 			max: Date.parse(hours.at(-1)?.hour ?? '') + 3_600_000,
@@ -119,7 +123,7 @@
 							suggestedMax: REPORT_THRESHOLDS.outage * 100 + 5,
 							grid: { color: border },
 							ticks: { color: muted, font: { family: 'Inter' }, callback: value => `${value}%` },
-							title: { display: true, text: 'Utilizadores com falhas', color: muted, font: { family: 'Inter' } },
+							title: { display: !narrow, text: 'Utilizadores com falhas', color: muted, font: { family: 'Inter' } },
 						},
 					},
 				},
@@ -167,7 +171,7 @@
 							beginAtZero: true,
 							grid: { color: border },
 							ticks: { color: muted, font: { family: 'Inter' }, callback: value => `${value} ms` },
-							title: { display: true, text: 'Tempo de resposta', color: muted, font: { family: 'Inter' } },
+							title: { display: !narrow, text: 'Tempo de resposta', color: muted, font: { family: 'Inter' } },
 						},
 					},
 				},
@@ -181,21 +185,24 @@
 	});
 </script>
 
-{#if reported}
-	<div class="h-64"><canvas bind:this={failuresCanvas}></canvas></div>
-	<p class="mt-2 text-xs text-muted-foreground">
-		As barras faltam nas horas com menos de {REPORT_THRESHOLDS.minActive} utilizadores; as linhas tracejadas marcam erros elevados ({REPORT_THRESHOLDS.degraded * 100}%) e falha ({REPORT_THRESHOLDS.outage * 100}%).
-	</p>
-{:else}
-	<p class="text-sm text-muted-foreground">
-		Quando o mapa deixa de receber dados, a app volta a tentar sem dar erro e o mapa fica apenas desatualizado, por isso aqui não há
-		falhas reportadas pelos utilizadores: o estado do mapa vem só das verificações.
-	</p>
-{/if}
-<div class="mt-6 h-40">
-	{#if hasLatency}
-		<canvas bind:this={latencyCanvas}></canvas>
+<!-- Measured so the charts know when they're on a phone. -->
+<div bind:clientWidth={width}>
+	{#if reported}
+		<div class="h-52 sm:h-64"><canvas bind:this={failuresCanvas}></canvas></div>
+		<p class="mt-2 text-xs text-muted-foreground">
+			As barras faltam nas horas com menos de {REPORT_THRESHOLDS.minActive} utilizadores; as linhas tracejadas marcam erros elevados ({REPORT_THRESHOLDS.degraded * 100}%) e falha ({REPORT_THRESHOLDS.outage * 100}%).
+		</p>
 	{:else}
-		<p class="flex h-full items-center justify-center text-sm text-muted-foreground">Ainda sem medições do tempo de resposta neste período</p>
+		<p class="text-sm text-muted-foreground">
+			Quando o mapa deixa de receber dados, a app volta a tentar sem dar erro e o mapa fica apenas desatualizado, por isso aqui não há
+			falhas reportadas pelos utilizadores: o estado do mapa vem só das verificações.
+		</p>
 	{/if}
+	<div class="mt-6 h-32 sm:h-40">
+		{#if hasLatency}
+			<canvas bind:this={latencyCanvas}></canvas>
+		{:else}
+			<p class="flex h-full items-center justify-center text-sm text-muted-foreground">Ainda sem medições do tempo de resposta neste período</p>
+		{/if}
+	</div>
 </div>

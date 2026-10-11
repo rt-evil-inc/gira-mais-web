@@ -8,6 +8,7 @@
 	import 'chartjs-adapter-date-fns';
 	import { mode } from 'mode-watcher';
 	import Spinner from '$lib/components/Spinner.svelte';
+	import { CHART_CARD, NARROW_CHART_WIDTH, NARROW_LEGEND_LABELS } from '$lib/charts';
 	import { partLabel, statusColor, statusLabel, type StatusSeries, type SystemKind } from '$lib/gira-system';
 
 	Chart.register(TimeScale, LinearScale, BarElement, LineElement, PointElement, Filler, Tooltip, Legend);
@@ -31,12 +32,14 @@
 	type Point = { x: Date; y: number | null };
 	let chartInstance: Chart<'bar' | 'line', Point[]> | null = null;
 	let chartCanvas = $state<HTMLCanvasElement | null>(null);
+	let width = $state(0);
+	const narrow = $derived(width > 0 && width < NARROW_CHART_WIDTH);
 	let normalized = $state(false);
 	const hasData = $derived(series.some(status => status.data.some(point => point.count != null)));
 
 	$effect(() => {
-		// Redraw on new data, a new grouping or the view toggle.
-		void [series, groupBy, chartType, normalized];
+		// Redraw on new data, a new grouping, the view toggle or a phone-sized width.
+		void [series, groupBy, chartType, normalized, narrow];
 		if (chartCanvas && !loading && hasData) createOrUpdateChart();
 	});
 
@@ -121,6 +124,7 @@
 							usePointStyle: true,
 							pointStyle: 'rectRounded',
 							padding: 16,
+							...narrow ? NARROW_LEGEND_LABELS : {},
 						},
 					},
 					tooltip: {
@@ -173,6 +177,8 @@
 						grid: { display: false },
 						ticks: {
 							font: { family: 'Inter' },
+							maxRotation: narrow ? 0 : 50,
+							autoSkipPadding: narrow ? 12 : 3,
 							callback: value => {
 								const date = new Date(value);
 								if (groupBy === 'hour') return date.toLocaleString('pt-PT', { hour: 'numeric', minute: '2-digit' });
@@ -190,7 +196,7 @@
 							callback: value => normalized ? `${(Number(value) * 100).toFixed(0)}%` : Number(value).toLocaleString('pt-PT'),
 						},
 						title: {
-							display: true,
+							display: !narrow,
 							text: normalized ? `Proporção de ${unit}` : `Número de ${unit}`,
 							font: { family: 'Inter' },
 						},
@@ -204,8 +210,8 @@
 	onMount(() => () => chartInstance?.destroy());
 </script>
 
-<Card.Root class="h-full">
-	<Card.CardHeader>
+<Card.Root class="h-full {CHART_CARD.root}">
+	<Card.CardHeader class={CHART_CARD.header}>
 		<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 			<div class="min-w-0 flex-1">
 				<Card.CardTitle>{title}</Card.CardTitle>
@@ -223,8 +229,8 @@
 		</div>
 	</Card.CardHeader>
 
-	<Card.CardContent>
-		<div class="h-80 relative">
+	<Card.CardContent class={CHART_CARD.content}>
+		<div class="h-72 sm:h-80 relative" bind:clientWidth={width}>
 			{#if loading}
 				<div class="absolute inset-0 flex items-center justify-center">
 					<Spinner />
