@@ -60,7 +60,6 @@
     "date-fns": "^4.4.0",
     "drizzle-orm": "^0.45.2",
     "embla-carousel-autoplay": "^8.6.0",
-    "jose": "^6.2.10",
     "postgres": "^3.4.9",
     "rehype-urls": "^1.2.0"
   }

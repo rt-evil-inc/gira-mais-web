@@ -3,7 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { toast } from 'svelte-sonner';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Settings, AlertTriangle } from '@lucide/svelte';
+	import { Settings, AlertTriangle, ChartLine } from '@lucide/svelte';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
@@ -16,7 +16,6 @@
 		DialogTitle,
 	} from '$lib/components/ui/dialog';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import LightSwitch from '$lib/components/LightSwitch.svelte';
 
 	let message = $state('');
 	let messageEn = $state('');
@@ -85,15 +84,19 @@
 	<title>Gira+ | Admin</title>
 </svelte:head>
 
-<div class="container mx-auto py-12 px-4 max-w-6xl">
-	<header class="mb-10">
-		<div class="flex items-center mb-4">
-			<Settings class="min-h-10 min-w-10 text-primary" />
-			<h1 class="text-3xl font-bold ml-2">Configurações</h1>
+<div class="container mx-auto py-8 sm:py-12 px-4 max-w-6xl">
+	<header class="mb-8 sm:mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+		<div class="flex items-center">
+			<Settings class="h-8 w-8 shrink-0 text-primary sm:h-10 sm:w-10" />
+			<h1 class="text-2xl font-bold ml-2 sm:text-3xl">Configurações</h1>
 		</div>
+		<Button variant="outline" size="sm" href="/admin" class="self-start sm:self-auto">
+			<ChartLine class="h-4 w-4" />
+			Monitorização
+		</Button>
 	</header>
 
-	<div class="grid md:grid-cols-2 gap-8">
+	<div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
 		<Card class="w-full">
 			<CardHeader>
 				<CardTitle>Mensagem ao abrir a app</CardTitle>

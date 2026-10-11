@@ -10,17 +10,25 @@ export const usage = pgTable(
 		os: varchar('os', { length: 32 }),
 		osVersion: varchar('os_version', { length: 32 }),
 	},
-	// For the status page's hourly active users.
-	table => [index('usage_timestamp_idx').on(table.timestamp)],
+	table => [
+		// For the status page's hourly active users.
+		index('usage_timestamp_idx').on(table.timestamp),
+		// For telling new devices from returning ones (the admin dashboard's new users and retention).
+		index('usage_device_id_timestamp_idx').on(table.deviceId, table.timestamp),
+	],
 );
 
-export const trips = pgTable('trips', {
-	id: serial('id').primaryKey(),
-	deviceId: varchar('device_id', { length: 64 }).notNull(),
-	timestamp: timestamp('timestamp').defaultNow().notNull(),
-	bikeSerial: varchar('bike_serial', { length: 32 }),
-	stationSerial: varchar('station_serial', { length: 32 }),
-});
+export const trips = pgTable(
+	'trips',
+	{
+		id: serial('id').primaryKey(),
+		deviceId: varchar('device_id', { length: 64 }).notNull(),
+		timestamp: timestamp('timestamp').defaultNow().notNull(),
+		bikeSerial: varchar('bike_serial', { length: 32 }),
+		stationSerial: varchar('station_serial', { length: 32 }),
+	},
+	table => [index('trips_timestamp_idx').on(table.timestamp)],
+);
 
 export const errors = pgTable(
 	'errors',
@@ -43,6 +51,10 @@ export const config = pgTable('config', {
 	messageShowAlways: text('messageShowAlways').notNull().default('false'),
 });
 
+/**
+ * Play Integrity tokens that phones generated for the app to use against the old GIRA backend. Retired: nothing
+ * writes or serves them anymore, but the table is kept for its history.
+ */
 export const integrityTokens = pgTable('integrity_tokens', {
 	id: serial('id').primaryKey(),
 	token: varchar('token', { length: 2048 }).notNull(),

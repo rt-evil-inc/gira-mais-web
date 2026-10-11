@@ -6,14 +6,15 @@
 	import LightSwitch from '$lib/components/LightSwitch.svelte';
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
+	import { ADMIN_SECTIONS } from '$lib/admin';
 
-	/** The statistics page's sections, linked from the bar while on it. */
+	/** The statistics page's sections, linked from the bar while on it (the admin dashboard's are in $lib/admin). */
 	const STATISTICS_SECTIONS = [
 		{ id: 'utilizacao', label: 'Utilização da Gira+' },
 		{ id: 'servicos', label: 'Serviços GIRA' },
 		{ id: 'sistema', label: 'Sistema GIRA' },
 	];
-	const sections = $derived(page.route.id === '/estatisticas' ? STATISTICS_SECTIONS : []);
+	const sections = $derived(page.route.id === '/estatisticas' ? STATISTICS_SECTIONS : page.route.id === '/admin' ? ADMIN_SECTIONS : []);
 
 	let admin = $state(false);
 	if (browser) {
