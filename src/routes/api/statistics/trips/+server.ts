@@ -4,6 +4,7 @@ import { trips } from '$lib/server/db/schema';
 import type { RequestHandler } from './$types';
 import { sql } from 'drizzle-orm';
 import { env } from '$env/dynamic/private';
+import { cacheKey, cachedResponse } from '$lib/server/cache';
 
 export const POST: RequestHandler = async ({ request }) => {
 	// Parse request body
@@ -58,8 +59,17 @@ export const POST: RequestHandler = async ({ request }) => {
 };
 
 const initialDate = new Date(env.INITIAL_DATE || '2025-04-27');
+const CACHE_MS = 60_000;
+/** The parameters the response depends on; others don't make new cache entries. */
+const CACHE_PARAMS = ['start', 'end', 'groupBy', 'timezone'];
 
-export const GET: RequestHandler = async ({ url }) => {
+// Every visitor of the statistics page asks for the same figures; one computation a minute serves them all.
+export const GET: RequestHandler = async ({ url, setHeaders }) => {
+	setHeaders({ 'Cache-Control': 'public, max-age=60' });
+	return cachedResponse(cacheKey(url, CACHE_PARAMS), CACHE_MS, () => query(url));
+};
+
+async function query(url: URL) {
 	let startDate = url.searchParams.get('start');
 	if (!startDate || Date.parse(startDate) < initialDate.getTime()) {
 		startDate = initialDate.toISOString();
@@ -150,4 +160,4 @@ export const GET: RequestHandler = async ({ url }) => {
 		console.error('Error fetching trip statistics data:', err);
 		throw error(500, { message: 'Failed to fetch trip statistics data' });
 	}
-};
+}

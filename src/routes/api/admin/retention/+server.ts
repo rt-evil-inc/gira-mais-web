@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { cached } from '$lib/server/admin';
+import { cached } from '$lib/server/cache';
 import type { RetentionResponse } from '$lib/admin';
 import type { RequestHandler } from './$types';
 

@@ -89,26 +89,3 @@ export function toSeries(buckets: string[], rows: Record<string, unknown>[], key
 		data: buckets.map(timestamp => ({ timestamp, count: counts.get(key)?.get(timestamp) ?? 0 })),
 	}));
 }
-
-const cache = new Map<string, { expires: number; value: Promise<unknown> }>;
-
-/**
- * The value computed for the key in the last ttlMs, or a new one. Concurrent requests share one computation; a
- * failed one isn't kept. The dashboard refreshes itself, so several open tabs cost the database one query.
- */
-export function cached<T>(key: string, ttlMs: number, compute: () => Promise<T>): Promise<T> {
-	const now = Date.now();
-	const hit = cache.get(key);
-	if (hit && hit.expires > now) return hit.value as Promise<T>;
-	for (const [entryKey, entry] of cache) if (entry.expires <= now) cache.delete(entryKey);
-	const value = compute();
-	cache.set(key, { expires: now + ttlMs, value });
-	value.catch(() => cache.delete(key));
-	return value;
-}
-
-/** The request's URL as a cache key: the path and its parameters, in a stable order. */
-export function cacheKey(url: URL) {
-	const params = [...url.searchParams].sort(([a], [b]) => a.localeCompare(b));
-	return `${url.pathname}?${new URLSearchParams(params)}`;
-}

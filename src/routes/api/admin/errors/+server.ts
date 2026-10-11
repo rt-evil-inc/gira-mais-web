@@ -1,7 +1,8 @@
 import { json } from '@sveltejs/kit';
 import { sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { bucketOf, cached, cacheKey, formatBucket, parseRange, rangeBuckets, toSeries } from '$lib/server/admin';
+import { bucketOf, formatBucket, parseRange, rangeBuckets, toSeries } from '$lib/server/admin';
+import { cached, cacheKey } from '$lib/server/cache';
 import { ERROR_SIGNATURE, ERROR_VERSION, errorFilters } from '$lib/server/admin-errors';
 import { OTHER_ERRORS, type ErrorsResponse } from '$lib/admin';
 import type { RequestHandler } from './$types';

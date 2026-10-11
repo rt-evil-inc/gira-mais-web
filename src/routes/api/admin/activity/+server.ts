@@ -1,7 +1,8 @@
 import { json } from '@sveltejs/kit';
 import { sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { cached, cacheKey, parseRange, type Range } from '$lib/server/admin';
+import { parseRange, type Range } from '$lib/server/admin';
+import { cached, cacheKey } from '$lib/server/cache';
 import type { ActivityResponse } from '$lib/admin';
 import type { RequestHandler } from './$types';
 

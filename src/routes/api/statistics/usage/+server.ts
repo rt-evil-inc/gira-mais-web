@@ -4,6 +4,7 @@ import { usage } from '$lib/server/db/schema';
 import { sql } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 import { env } from '$env/dynamic/private';
+import { cacheKey, cachedResponse } from '$lib/server/cache';
 
 export const POST: RequestHandler = async ({ request }) => {
 	// Parse request body
@@ -38,8 +39,17 @@ export const POST: RequestHandler = async ({ request }) => {
 };
 
 const initialDate = new Date(env.INITIAL_DATE || '2025-04-27');
+const CACHE_MS = 60_000;
+/** The parameters the response depends on; others don't make new cache entries. */
+const CACHE_PARAMS = ['start', 'end', 'groupBy', 'timezone'];
 
-export const GET: RequestHandler = async ({ url }) => {
+// Every visitor of the statistics page asks for the same figures; one computation a minute serves them all.
+export const GET: RequestHandler = async ({ url, setHeaders }) => {
+	setHeaders({ 'Cache-Control': 'public, max-age=60' });
+	return cachedResponse(cacheKey(url, CACHE_PARAMS), CACHE_MS, () => query(url));
+};
+
+async function query(url: URL) {
 	let startDate = url.searchParams.get('start');
 	if (!startDate || Date.parse(startDate) < initialDate.getTime()) {
 		startDate = initialDate.toISOString();
@@ -57,15 +67,14 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	try {
 		if (groupBy === 'total') {
-			// Get total unique users in the given time range
-			const totalQuery = await db
-				.select({
-					count: sql<number>`COUNT(DISTINCT ${usage.deviceId})`,
-				})
-				.from(usage)
-				.where(
-					sql`${usage.timestamp} >= ${startDate} AND ${usage.timestamp} < ${endDate}`,
-				);
+			// Get total unique users in the given time range. COUNT(DISTINCT) would sort every row, spilling to disk;
+			// a DISTINCT subquery hashes them instead, several times faster.
+			const totalQuery = await db.execute(sql`
+				SELECT COUNT(*) AS count FROM (
+					SELECT DISTINCT ${usage.deviceId} FROM ${usage}
+					WHERE ${usage.timestamp} >= ${startDate} AND ${usage.timestamp} < ${endDate}
+				) AS devices
+			`);
 
 			const totalCount = totalQuery[0]?.count || 0;
 			return json({
@@ -95,14 +104,20 @@ export const GET: RequestHandler = async ({ url }) => {
           ${intervalUnit}::interval
         ) AS time_point
       ),
+      -- Each device once per bucket, then counted: faster than COUNT(DISTINCT), which sorts every row.
       counts AS (
         SELECT 
-          DATE_TRUNC(${truncateFormat}, au.timestamp AT TIME ZONE 'UTC' AT TIME ZONE ${timezone}) AS grouped_time,
-          COUNT(DISTINCT au.device_id) AS user_count
-        FROM 
-          "usage" AS au
-        WHERE 
-          au.timestamp >= ${startDate} AND au.timestamp < ${endDate}
+          grouped_time,
+          COUNT(*) AS user_count
+        FROM (
+          SELECT DISTINCT
+            DATE_TRUNC(${truncateFormat}, au.timestamp AT TIME ZONE 'UTC' AT TIME ZONE ${timezone}) AS grouped_time,
+            au.device_id
+          FROM 
+            "usage" AS au
+          WHERE 
+            au.timestamp >= ${startDate} AND au.timestamp < ${endDate}
+        ) AS devices
         GROUP BY 
           grouped_time
       )
@@ -130,4 +145,4 @@ export const GET: RequestHandler = async ({ url }) => {
 		console.error('Error fetching usage statistics data:', err);
 		throw error(500, { message: 'Failed to fetch usage statistics data' });
 	}
-};
+}
