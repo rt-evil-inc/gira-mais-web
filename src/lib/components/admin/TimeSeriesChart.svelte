@@ -41,6 +41,8 @@
 		error?: string | null;
 		/** What is counted ("utilizadores"), for the axis and the tooltip's total. */
 		unit: string;
+		/** Decimal places on the axis and in the tooltip, for values that aren't whole counts (a ratio). */
+		decimals?: number;
 		/** Mark the app's releases. */
 		releases?: boolean;
 		/** Extra controls in the card's header. */
@@ -59,6 +61,7 @@
 		loading = false,
 		error = null,
 		unit,
+		decimals,
 		releases = false,
 		controls,
 	}: Props = $props();
@@ -228,7 +231,7 @@
 								}
 								const total = totals[context.dataIndex];
 								const part = stacked && !entry.overlay && stackedSeries.length > 1 && total ? ` (${formatPercent(value / total, 1)})` : '';
-								return ` ${entry.label}: ${formatNumber(value, value < 10 ? 1 : 0)}${part}`;
+								return ` ${entry.label}: ${formatNumber(value, decimals ?? (value < 10 ? 1 : 0))}${part}`;
 							},
 							footer: items => {
 								if (!stacked || stackedSeries.length < 2 || !items.length) return '';
@@ -262,9 +265,9 @@
 						beginAtZero: true,
 						max: share ? 1 : undefined,
 						ticks: {
-							precision: 0,
+							precision: decimals ?? 0,
 							font: { family: 'Inter' },
-							callback: value => share ? formatPercent(Number(value)) : formatNumber(Number(value)),
+							callback: value => share ? formatPercent(Number(value)) : formatNumber(Number(value), decimals),
 						},
 						title: { display: !narrow, text: share ? `Proporção de ${unit}` : `Número de ${unit}`, font: { family: 'Inter' } },
 					},

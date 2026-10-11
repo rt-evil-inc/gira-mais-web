@@ -8,15 +8,20 @@ import type { RequestHandler } from './$types';
 
 const TOP_STATIONS = 15;
 
-/** Trips over the range and the devices that made them, the stations they started from and the bikes' ratings. */
+/** Trips over the range, the devices that made them and the devices active then, the stations they started from and the bikes' ratings. */
 export const GET: RequestHandler = async ({ url }) => {
 	const range = parseRange(url);
 	return json(await cached(cacheKey(url), 60_000, async (): Promise<TripsResponse> => {
-		const [buckets, series, stations, ratings] = await Promise.all([
+		const [buckets, series, active, stations, ratings] = await Promise.all([
 			rangeBuckets(range),
 			db.execute(sql`
 				SELECT ${formatBucket(range, bucketOf(range, sql`timestamp`))} AS bucket, COUNT(*) AS trips, COUNT(DISTINCT device_id) AS devices
 				FROM trips WHERE timestamp >= ${range.start} AND timestamp < ${range.end}
+				GROUP BY 1
+			`),
+			db.execute(sql`
+				SELECT ${formatBucket(range, bucketOf(range, sql`timestamp`))} AS bucket, 'active' AS key, COUNT(DISTINCT device_id) AS count
+				FROM usage WHERE timestamp >= ${range.start} AND timestamp < ${range.end}
 				GROUP BY 1
 			`),
 			db.execute(sql`
@@ -41,6 +46,7 @@ export const GET: RequestHandler = async ({ url }) => {
 				{ bucket: row.bucket, key: 'trips', count: row.trips },
 				{ bucket: row.bucket, key: 'devices', count: row.devices },
 			]), ['trips', 'devices']),
+			activeDevices: toSeries(buckets, active, ['active'])[0],
 			stations: stations.map(row => ({ id: String(row.id), name: row.name == null ? null : String(row.name), trips: Number(row.trips), previous: Number(row.previous) })),
 			ratings: ratingCounts(true),
 			previousRatings: ratingCounts(false),

@@ -72,6 +72,8 @@ export interface RetentionResponse {
 export interface TripsResponse {
 	/** Trips per bucket, and the devices that made them. */
 	series: CountSeries[];
+	/** Devices that opened the app in each bucket, to put the trips in proportion. */
+	activeDevices: CountSeries;
 	stations: { id: string; name: string | null; trips: number; previous: number }[];
 	ratings: { rating: number; count: number }[];
 	previousRatings: { rating: number; count: number }[];

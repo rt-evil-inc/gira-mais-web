@@ -24,6 +24,22 @@
 		{ ...trips.data.series[1], label: 'Utilizadores com viagens', color: COLORS.blue, overlay: true },
 	] : []);
 
+	/** Trips over the devices that opened the app in the same bucket; nothing where none did. */
+	const perActive = $derived.by(() => {
+		if (!trips.data) return null;
+		const { series: [tripSeries], activeDevices } = trips.data;
+		const active = activeDevices.data.reduce((total, point) => total + point.count, 0);
+		return {
+			series: [{
+				key: 'perActive',
+				label: 'Viagens por utilizador ativo',
+				color: COLORS.good,
+				data: tripSeries.data.map((point, index) => ({ timestamp: point.timestamp, count: activeDevices.data[index].count ? point.count / activeDevices.data[index].count : 0 })),
+			}] satisfies ChartSeries[],
+			average: active ? tripSeries.data.reduce((total, point) => total + point.count, 0) / active : null,
+		};
+	});
+
 	const totals = $derived.by(() => {
 		if (!trips.data) return null;
 		const sum = (index: number) => trips.data!.series[index].data.reduce((total, point) => total + point.count, 0);
@@ -76,6 +92,20 @@
 		{chartType}
 		stacked={false}
 		unit="viagens"
+		releases
+		loading={trips.loading}
+		error={trips.error}
+	/>
+
+	<TimeSeriesChart
+		title="Viagens por utilizador ativo"
+		description={`As viagens de cada ${groupBy === 'hour' ? 'hora' : 'dia'} a dividir pelos dispositivos que abriram a app ${groupBy === 'hour' ? 'nessa hora' : 'nesse dia'}${perActive?.average != null ? `: ${formatNumber(perActive.average, 2)} em média no período` : ''}`}
+		series={perActive?.series ?? []}
+		{groupBy}
+		{chartType}
+		stacked={false}
+		unit="viagens por utilizador"
+		decimals={2}
 		releases
 		loading={trips.loading}
 		error={trips.error}
