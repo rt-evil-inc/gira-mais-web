@@ -76,6 +76,10 @@ export const bikeRatings = pgTable(
 		tripCode: varchar('trip_code', { length: 16 }),
 		bikePlate: varchar('bike_plate', { length: 8 }),
 		rating: integer('rating').notNull(),
+		/** Codes of the problems the rider picked in the app's details step (its `TRIP_RATING_REASONS`), null if it wasn't used. */
+		reasons: text('reasons').array(),
+		/** Free text the rider wrote in the details step, when any. */
+		comment: text('comment'),
 	},
 	table => [
 		index('bike_ratings_bike_plate_timestamp_idx').on(table.bikePlate, table.timestamp),

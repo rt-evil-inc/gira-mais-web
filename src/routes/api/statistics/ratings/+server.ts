@@ -5,6 +5,11 @@ import type { RequestHandler } from '@sveltejs/kit';
 import { sql } from 'drizzle-orm';
 import { env } from '$env/dynamic/private';
 import { cacheKey, cachedResponse } from '$lib/server/cache';
+import { aboutBike } from '$lib/server/ratings';
+import { optionalReasons, optionalString } from '$lib/server/unlock-attempts';
+
+/** The app caps the comment field at 500 characters. */
+const MAX_COMMENT_CHARS = 1000;
 
 export const POST: RequestHandler = async ({ request }) => {
 	// Parse request body
@@ -39,6 +44,10 @@ export const POST: RequestHandler = async ({ request }) => {
 		timestamp = parsedTimestamp;
 	}
 
+	// Sent by app versions with the rating's details step, when it was used
+	const reasons = optionalReasons(body.reasons, 'reasons');
+	const comment = body.comment ? optionalString(body.comment, 'comment', MAX_COMMENT_CHARS) : null;
+
 	try {
 		// Store bike rating in database
 		await db.insert(bikeRatings).values({
@@ -46,6 +55,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			tripCode: body.tripCode,
 			bikePlate: body.bikePlate,
 			rating: rating,
+			reasons,
+			comment,
 			ratedAt: new Date,
 			...timestamp && { timestamp }, // Use provided timestamp if valid
 		});
@@ -97,7 +108,7 @@ async function query(url: URL) {
 				})
 				.from(bikeRatings)
 				.where(
-					sql`${bikeRatings.timestamp} >= ${startDate} AND ${bikeRatings.timestamp} < ${endDate}`,
+					sql`${bikeRatings.timestamp} >= ${startDate} AND ${bikeRatings.timestamp} < ${endDate} AND ${aboutBike}`,
 				);
 
 			const totalCount = totalQuery[0]?.count || 0;
@@ -139,7 +150,7 @@ async function query(url: URL) {
 				FROM 
 					"bike_ratings" AS br
 				WHERE 
-					br.timestamp >= ${startDate} AND br.timestamp < ${endDate}
+					br.timestamp >= ${startDate} AND br.timestamp < ${endDate} AND ${aboutBike}
 				GROUP BY 
 					grouped_time, br.rating
 			)

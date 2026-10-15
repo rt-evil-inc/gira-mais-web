@@ -2,6 +2,7 @@ import { error, json } from '@sveltejs/kit';
 import { and, inArray, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { bikeRatings } from '$lib/server/db/schema';
+import { aboutBike } from '$lib/server/ratings';
 import type { RequestHandler } from './$types';
 
 const MAX_BIKES = 50;
@@ -12,6 +13,7 @@ const MAX_AGE_DAYS = 3;
 // rating - 4 for each recent rating, then maps <= -3 to bad, < 0 to neutral,
 // and >= 0 to good. Values 2 and 4 are intentionally unused for now so the
 // client can keep a stable 1-5 scale if future heuristics add more nuance.
+// Ratings about the app rather than the bike are left out (see aboutBike).
 export const GET: RequestHandler = async ({ url }) => {
 	const bikeIds = (url.searchParams.get('bikes') || '')
 		.split(',')
@@ -38,6 +40,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			.where(and(
 				inArray(bikeRatings.bikePlate, uniqueBikeIds),
 				sql`${bikeRatings.timestamp} >= ${since}`,
+				aboutBike,
 			))
 			.groupBy(bikeRatings.bikePlate);
 

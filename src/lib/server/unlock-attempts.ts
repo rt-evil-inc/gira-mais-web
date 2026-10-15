@@ -40,10 +40,10 @@ export function optionalInteger(value: unknown, name: string) {
 	return value;
 }
 
-export function optionalReasons(value: unknown) {
+export function optionalReasons(value: unknown, name = 'hiddenReasons') {
 	if (value === undefined || value === null) return null;
 	if (!Array.isArray(value) || value.length > MAX_REASONS || !value.every(reason => typeof reason === 'string' && reason.length <= MAX_REASON_CHARS)) {
-		throw error(400, { message: `hiddenReasons must be an array of at most ${MAX_REASONS} strings` });
+		throw error(400, { message: `${name} must be an array of at most ${MAX_REASONS} strings` });
 	}
 	return value as string[];
 }
