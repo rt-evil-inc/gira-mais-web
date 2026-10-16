@@ -207,6 +207,26 @@ export function unavailableDocks(station: { dockLimit: number; freeDocks: number
 	return Math.max(0, station.dockLimit - station.freeDocks - dockedBikes);
 }
 
+/**
+ * A listed station's docks split the way the docks chart splits them, in its order and colours. A missing station
+ * keeps the bikes last seen in its docks, but has no free, suspicious or unavailable docks to speak of.
+ */
+export function stationDockSegments(station: SystemStation): { status: DockStatus; count: number; label: string }[] {
+	const missing = station.status === 'missing';
+	const docked = station.bikes.filter(bike => bike.dock != null);
+	const availableBikes = docked.filter(bike => bike.status === 'available').length;
+	const free = missing ? 0 : station.freeDocks - station.suspiciousDocks;
+	const suspicious = missing ? 0 : station.suspiciousDocks;
+	const unavailable = missing ? 0 : station.unavailableDocks;
+	return [
+		{ status: 'available_bike', count: availableBikes, label: 'com bicicleta disponível' },
+		{ status: 'unavailable_bike', count: docked.length - availableBikes, label: 'com bicicleta indisponível' },
+		{ status: 'free', count: free, label: free === 1 ? 'livre' : 'livres' },
+		{ status: 'suspicious', count: suspicious, label: suspicious === 1 ? 'suspeita' : 'suspeitas' },
+		{ status: 'unavailable', count: unavailable, label: unavailable === 1 ? 'indisponível' : 'indisponíveis' },
+	];
+}
+
 /** "3 dias" from 2 days on, "36 horas" before: how long something has lasted, rounded down. */
 export function formatDuration(hours: number) {
 	if (hours >= 48) return `${Math.floor(hours / 24)} dias`;
