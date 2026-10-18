@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { mode } from 'mode-watcher';
-	import { CircleCheck, CircleX, TriangleAlert, CircleQuestionMark } from '@lucide/svelte';
+	import { Activity, CircleCheck, CircleX, TriangleAlert, CircleQuestionMark } from '@lucide/svelte';
 	import * as Card from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import Spinner from '$lib/components/Spinner.svelte';
@@ -103,8 +103,11 @@
 
 <section id="servicos" class="mt-16 scroll-mt-20">
 	<header class="mb-6">
-		<h2 class="text-2xl font-bold">Estado dos serviços GIRA</h2>
-		<p class="mt-1 text-sm text-muted-foreground">
+		<div class="mb-4 flex items-center">
+			<Activity class="h-8 w-8 shrink-0 text-primary sm:h-10 sm:w-10" />
+			<h2 class="ml-2 text-2xl font-bold sm:text-3xl">Estado dos serviços GIRA</h2>
+		</div>
+		<p class="text-sm text-muted-foreground">
 			Disponibilidade dos servidores de que a GIRA depende, desde o novo sistema{since ? ` (${since})` : ''}, a partir das falhas que a app Gira+
 			encontra e de verificações próprias. Uma hora conta com erros elevados quando pelo menos {REPORT_THRESHOLDS.degraded * 100}% dos utilizadores
 			ativos (e no mínimo {REPORT_THRESHOLDS.minUsers}) tiveram falhas de ligação ou erros do servidor, e como falha a partir de
@@ -206,7 +209,6 @@
 						<Card.CardTitle>Últimos 7 dias</Card.CardTitle>
 						<Card.CardDescription>
 							Utilizadores da app com falhas, em percentagem dos que a usaram em cada hora, e o tempo de resposta do servidor.
-							Só contam falhas de ligação e erros do servidor, não pedidos recusados (como uma bicicleta avariada).
 						</Card.CardDescription>
 					</div>
 					<Tabs.Root value={detail} onValueChange={value => { detail = value; }}>

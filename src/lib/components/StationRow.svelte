@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { mode } from 'mode-watcher';
-	import { Bike, ChevronDown } from '@lucide/svelte';
+	import { ChevronDown } from '@lucide/svelte';
+	import BikeIcon from '$lib/components/icons/BikeIcon.svelte';
+	import DockIcon from '$lib/components/icons/DockIcon.svelte';
 	import { COLORS, REASON_LABELS, formatDuration, formatHours, listedStationOccupancy, stationService, statusColor, statusLabel, type SystemStation } from '$lib/gira-system';
 
 	let { station, highlight = null, suspiciousAfterHours }: { station: SystemStation; highlight?: string | null; suspiciousAfterHours: number } = $props();
@@ -42,8 +44,8 @@
 	const suspicious = $derived(missing ? 0 : station.suspiciousDocks);
 	const segments = $derived([
 		{ status: 'available_bike', count: availableBikes, label: 'com bicicleta disponível' },
-		{ status: 'unavailable_bike', count: docked.length - availableBikes, label: 'com bicicleta indisponível' },
 		{ status: 'free', count: free, label: free === 1 ? 'livre' : 'livres' },
+		{ status: 'unavailable_bike', count: docked.length - availableBikes, label: 'com bicicleta indisponível' },
 		{ status: 'suspicious', count: suspicious, label: suspicious === 1 ? 'suspeita' : 'suspeitas' },
 		{ status: 'unavailable', count: missing ? 0 : station.unavailableDocks, label: station.unavailableDocks === 1 ? 'indisponível' : 'indisponíveis' },
 	]);
@@ -116,7 +118,7 @@
 					{/each}
 				</div>
 				<p class="mt-1 whitespace-nowrap text-xs tabular-nums text-muted-foreground">
-					<Bike class="inline h-3 w-3 align-[-0.15em]" aria-label="Bicicletas" /> {plural(availableBikes, 'disponível', 'disponíveis')} · {plural(free, 'livre', 'livres')}{#if suspicious}{' · '}<span class="font-medium text-foreground">{plural(suspicious, 'suspeita', 'suspeitas')}</span>{/if}
+					<BikeIcon class="inline h-3 w-3 align-[-0.15em]" aria-label="Bicicletas" /> {plural(availableBikes, 'disponível', 'disponíveis')} · <DockIcon class="inline h-3 w-3 align-[-0.15em]" aria-label="Docas" /> {plural(free, 'livre', 'livres')}{#if suspicious}{' · '}<span class="font-medium text-foreground">{plural(suspicious, 'suspeita', 'suspeitas')}</span>{/if}
 				</p>
 			{/if}
 		</div>

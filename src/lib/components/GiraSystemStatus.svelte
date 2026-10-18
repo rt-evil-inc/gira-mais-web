@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { getLocalTimeZone } from '@internationalized/date';
 	import type { DateRange } from 'bits-ui';
-	import { Bike, Lock, MapPin } from '@lucide/svelte';
+	import { Map as MapIcon, MapPin } from '@lucide/svelte';
+	import BikeIcon from '$lib/components/icons/BikeIcon.svelte';
+	import DockIcon from '$lib/components/icons/DockIcon.svelte';
 	import StatCard from '$lib/components/StatCard.svelte';
 	import StatisticsControls from '$lib/components/StatisticsControls.svelte';
 	import SystemStatusChart from '$lib/components/SystemStatusChart.svelte';
@@ -110,8 +112,11 @@
 
 <section id="sistema" class="mt-16 scroll-mt-20">
 	<header class="mb-6">
-		<h2 class="text-2xl font-bold">Estado do Sistema GIRA</h2>
-		<p class="mt-1 text-sm text-muted-foreground">
+		<div class="mb-4 flex items-center">
+			<MapIcon class="h-8 w-8 shrink-0 text-primary sm:h-10 sm:w-10" />
+			<h2 class="ml-2 text-2xl font-bold sm:text-3xl">Estado do Sistema GIRA</h2>
+		</div>
+		<p class="text-sm text-muted-foreground">
 			Estado das estações, docas e bicicletas da GIRA, recolhido do sistema da EMEL a cada 5 minutos{polledAt ? ` (última atualização: ${polledAt})` : ''}.
 			Cada período mostra a média das recolhas feitas nele.
 		</p>
@@ -133,7 +138,7 @@
 			total={totals ? sum(totals.docks, ['missing']) : undefined}
 			loading={currentLoading}
 			error={currentError ?? undefined}
-			icon={Lock}
+			icon={DockIcon}
 			description={totals ? `${plural(totals.docks.free ?? 0, 'livre', 'livres')} e ${(totals.docks.available_bike ?? 0) + (totals.docks.unavailable_bike ?? 0)} com bicicleta${totals.docks.suspicious ? `; ${plural(totals.docks.suspicious, 'suspeita não conta', 'suspeitas não contam')}` : ''}` : undefined}
 		/>
 		<StatCard
@@ -142,7 +147,7 @@
 			total={totals ? sum(totals.bikes, ['missing']) : undefined}
 			loading={currentLoading}
 			error={currentError ?? undefined}
-			icon={Bike}
+			icon={BikeIcon}
 			description={totals ? `${(totals.bikes.available ?? 0) + (totals.bikes.booked ?? 0)} disponíveis nas docas e ${totals.bikes.in_trip ?? 0} em viagem; não contam ${plural(countOf(totals.bikes, 'unavailable'), 'indisponível', 'indisponíveis')}` : undefined}
 		/>
 	</div>

@@ -65,8 +65,8 @@ export const OCCUPANCY_STATUSES = {
 
 export const DOCK_STATUSES = {
 	available_bike: { label: 'Com bicicleta disponível', ...COLORS.good },
-	unavailable_bike: { label: 'Com bicicleta indisponível', ...COLORS.warning },
 	free: { label: 'Livre', ...COLORS.free },
+	unavailable_bike: { label: 'Com bicicleta indisponível', ...COLORS.warning },
 	/** Reported free, but long without a bike: see longEmptyDocks in $lib/server/gira-system/docks. */
 	suspicious: { label: 'Suspeita', ...COLORS.serious },
 	unavailable: { label: 'Indisponível', ...COLORS.critical },
@@ -90,9 +90,9 @@ const OUTSIDE_PARTS = {
 
 export const BIKE_STATUSES = {
 	available: { label: 'Disponível', ...COLORS.good },
+	in_trip: { label: 'Em viagem', ...COLORS.blue },
 	booked: { label: 'Reservada', ...COLORS.violet },
 	unavailable: { label: 'Indisponível', ...COLORS.critical, parts: UNAVAILABLE_REASONS },
-	in_trip: { label: 'Em viagem', ...COLORS.blue },
 	outside: { label: 'Fora das docas', ...COLORS.gray, parts: OUTSIDE_PARTS },
 	missing: { label: 'Desaparecida', ...COLORS.grayDark },
 } satisfies Record<string, StatusDefinition>;

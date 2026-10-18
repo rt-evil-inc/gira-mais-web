@@ -60,8 +60,7 @@
 	<Card.CardHeader class={CHART_CARD.header}>
 		<Card.CardTitle>Estações</Card.CardTitle>
 		<Card.CardDescription>
-			Estado atual das docas de cada estação; abre uma estação para ver as bicicletas que lá estão. O sistema só indica o
-			número das docas que têm uma bicicleta; das restantes indica quantas estão livres, e as que sobram estão indisponíveis.
+			Estado atual das docas de cada estação; abre uma estação para ver as bicicletas que lá estão.
 		</Card.CardDescription>
 	</Card.CardHeader>
 	<Card.CardContent class={CHART_CARD.content}>
