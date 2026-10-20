@@ -14,7 +14,7 @@
 	const PAGE_SIZE = 25;
 	const FILTERS = [['all', 'Todas'], ['empty', 'Vazias'], ['full', 'Cheias'], ['idle', 'Suspeitas'], ['out_of_service', 'Indisponíveis']];
 
-	let view = $state('list');
+	let view = $state('map');
 	let query = $state('');
 	let filter = $state('all');
 	let sort = $state('number');
@@ -70,8 +70,8 @@
 			<Card.CardTitle>Estações</Card.CardTitle>
 			<Tabs.Root value={view} onValueChange={value => { view = value; }}>
 				<Tabs.TabsList>
-					<Tabs.TabsTrigger value="list"><List class="mr-1.5 h-4 w-4" />Lista</Tabs.TabsTrigger>
 					<Tabs.TabsTrigger value="map"><MapIcon class="mr-1.5 h-4 w-4" />Mapa</Tabs.TabsTrigger>
+					<Tabs.TabsTrigger value="list"><List class="mr-1.5 h-4 w-4" />Lista</Tabs.TabsTrigger>
 				</Tabs.TabsList>
 			</Tabs.Root>
 		</div>
@@ -119,7 +119,7 @@
 			</p>
 		{:else if view === 'map'}
 			<p class="mb-3 text-xs text-muted-foreground">{filtered.length} de {stations.length} estações</p>
-			<!-- MapLibre is large and only needed once the map is opened, so it loads with the map rather than with the page. -->
+			<!-- MapLibre is large, so it loads with the map, once the stations have, rather than with the page. -->
 			{#await import('$lib/components/StationMap.svelte')}
 				<div class="flex h-[26rem] items-center justify-center sm:h-[36rem]"><Spinner /></div>
 			{:then { default: StationMap }}
