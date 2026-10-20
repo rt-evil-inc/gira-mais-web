@@ -3,7 +3,7 @@
 	import { ChevronDown } from '@lucide/svelte';
 	import BikeIcon from '$lib/components/icons/BikeIcon.svelte';
 	import DockIcon from '$lib/components/icons/DockIcon.svelte';
-	import { COLORS, REASON_LABELS, formatDuration, formatHours, listedStationOccupancy, stationService, statusColor, statusLabel, type SystemStation } from '$lib/gira-system';
+	import { COLORS, REASON_LABELS, formatDuration, formatHours, listedStationOccupancy, stationDockSegments, stationService, statusColor, statusLabel, type SystemStation } from '$lib/gira-system';
 
 	let { station, highlight = null, suspiciousAfterHours }: { station: SystemStation; highlight?: string | null; suspiciousAfterHours: number } = $props();
 
@@ -39,16 +39,9 @@
 		toggled = null;
 	});
 
-	/** The station's docks split the way the docks chart splits them, in its order and colours. */
 	const free = $derived(missing ? 0 : station.freeDocks - station.suspiciousDocks);
 	const suspicious = $derived(missing ? 0 : station.suspiciousDocks);
-	const segments = $derived([
-		{ status: 'available_bike', count: availableBikes, label: 'com bicicleta disponível' },
-		{ status: 'free', count: free, label: free === 1 ? 'livre' : 'livres' },
-		{ status: 'unavailable_bike', count: docked.length - availableBikes, label: 'com bicicleta indisponível' },
-		{ status: 'suspicious', count: suspicious, label: suspicious === 1 ? 'suspeita' : 'suspeitas' },
-		{ status: 'unavailable', count: missing ? 0 : station.unavailableDocks, label: station.unavailableDocks === 1 ? 'indisponível' : 'indisponíveis' },
-	]);
+	const segments = $derived(stationDockSegments(station));
 
 	function formatDay(value: string) {
 		return new Date(value).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' });

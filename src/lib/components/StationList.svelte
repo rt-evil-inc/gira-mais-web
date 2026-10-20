@@ -3,7 +3,7 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
-	import { Search } from '@lucide/svelte';
+	import { List, Map as MapIcon, Search } from '@lucide/svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import StationRow from '$lib/components/StationRow.svelte';
 	import { listedStationOccupancy, type SystemStation } from '$lib/gira-system';
@@ -14,6 +14,7 @@
 	const PAGE_SIZE = 25;
 	const FILTERS = [['all', 'Todas'], ['empty', 'Vazias'], ['full', 'Cheias'], ['idle', 'Suspeitas'], ['out_of_service', 'Indisponíveis']];
 
+	let view = $state('map');
 	let query = $state('');
 	let filter = $state('all');
 	let sort = $state('number');
@@ -49,6 +50,13 @@
 			station.bikes.some(bike => bike.visualId.toLowerCase() === needle);
 	}).sort(sorters[sort]));
 
+	/** From a station on the map to its row in the list. */
+	function showInList(station: SystemStation) {
+		query = station.number ?? station.name;
+		filter = 'all';
+		view = 'list';
+	}
+
 	$effect(() => {
 		// Back to the first page whenever the search changes.
 		void [needle, filter, sort];
@@ -58,7 +66,15 @@
 
 <Card.Root id="estacoes" class="scroll-mt-20 {CHART_CARD.root}">
 	<Card.CardHeader class={CHART_CARD.header}>
-		<Card.CardTitle>Estações</Card.CardTitle>
+		<div class="flex items-center justify-between gap-3">
+			<Card.CardTitle>Estações</Card.CardTitle>
+			<Tabs.Root value={view} onValueChange={value => { view = value; }}>
+				<Tabs.TabsList>
+					<Tabs.TabsTrigger value="map"><MapIcon class="mr-1.5 h-4 w-4" />Mapa</Tabs.TabsTrigger>
+					<Tabs.TabsTrigger value="list"><List class="mr-1.5 h-4 w-4" />Lista</Tabs.TabsTrigger>
+				</Tabs.TabsList>
+			</Tabs.Root>
+		</div>
 		<Card.CardDescription>
 			Estado atual das docas de cada estação; abre uma estação para ver as bicicletas que lá estão.
 		</Card.CardDescription>
@@ -83,7 +99,7 @@
 						<option {value}>{label}</option>
 					{/each}
 				</select>
-				<select bind:value={sort} aria-label="Ordenar estações" class="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:flex-none">
+				<select bind:value={sort} aria-label="Ordenar estações" class:hidden={view === 'map'} class="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:flex-none">
 					<option value="number">Por número</option>
 					<option value="available">Mais bicicletas disponíveis</option>
 					<option value="free">Mais docas livres</option>
@@ -101,6 +117,14 @@
 			<p class="py-8 text-center text-muted-foreground">
 				{stations.length ? 'Nenhuma estação corresponde à pesquisa' : 'Ainda não há dados do sistema'}
 			</p>
+		{:else if view === 'map'}
+			<p class="mb-3 text-xs text-muted-foreground">{filtered.length} de {stations.length} estações</p>
+			<!-- MapLibre is large, so it loads with the map, once the stations have, rather than with the page. -->
+			{#await import('$lib/components/StationMap.svelte')}
+				<div class="flex h-[26rem] items-center justify-center sm:h-[36rem]"><Spinner /></div>
+			{:then { default: StationMap }}
+				<StationMap stations={filtered} onshowinlist={showInList} />
+			{/await}
 		{:else}
 			<p class="mb-3 text-xs text-muted-foreground">{filtered.length} de {stations.length} estações</p>
 			<div class="rounded-lg border">
