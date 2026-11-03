@@ -5,10 +5,9 @@
 	import * as Card from '$lib/components/ui/card';
 	import { TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, type ChartTypeRegistry } from 'chart.js';
 	import 'chartjs-adapter-date-fns';
-	import { mode } from 'mode-watcher';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import annotationPlugin from 'chartjs-plugin-annotation';
-	import { CHART_CARD, NARROW_CHART_WIDTH } from '$lib/charts';
+	import { CHART_CARD, NARROW_CHART_WIDTH, onModeChange } from '$lib/charts';
 
 	Chart.register(TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, annotationPlugin);
 
@@ -36,7 +35,7 @@
 		}
 	});
 
-	mode.subscribe(createOrUpdateChart);
+	onModeChange(createOrUpdateChart);
 
 	async function fetchReleases() {
 		try {

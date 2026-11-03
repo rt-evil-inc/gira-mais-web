@@ -8,12 +8,15 @@
 
 	let { children } = $props();
 
-	// Store the last mode in localStorage when it changes and we are not on the home page
-	mode.subscribe(mode => {
-		if (browser && page.route.id !== '/') {
-			localStorage.setItem('mode', mode || 'system');
-		}
-	});
+	// Store the last mode in localStorage when it changes and we are not on the home page. Only in the browser: on the
+	// server `mode` is one store shared by every request, so each render would stay subscribed, and in memory, for good.
+	if (browser) {
+		mode.subscribe(mode => {
+			if (page.route.id !== '/') {
+				localStorage.setItem('mode', mode || 'system');
+			}
+		});
+	}
 
 	// Apply mode based on route
 	$effect(() => {

@@ -1,3 +1,23 @@
+import { onMount } from 'svelte';
+import { mode } from 'mode-watcher';
+
+/**
+ * Calls `redraw` whenever the light/dark mode changes, from mount until the component is destroyed. Call it while the
+ * component initialises. Subscribing to `mode` there directly also runs on the server, where the store is shared by
+ * every request, and never unsubscribes: every page render stayed in memory for good.
+ */
+export function onModeChange(redraw: () => void) {
+	onMount(() => {
+		// The store calls back at once with the current mode; the chart draws itself when its data arrives.
+		let subscribed = false;
+		const unsubscribe = mode.subscribe(() => {
+			if (subscribed) redraw();
+		});
+		subscribed = true;
+		return unsubscribe;
+	});
+}
+
 /**
  * Below this width (px) a chart is on a phone: the axis titles give way (the card's title already names what's
  * plotted), the dates stay level and the legend tightens, so the plot keeps its room.

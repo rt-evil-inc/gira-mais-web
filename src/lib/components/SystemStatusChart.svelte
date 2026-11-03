@@ -8,7 +8,7 @@
 	import 'chartjs-adapter-date-fns';
 	import { mode } from 'mode-watcher';
 	import Spinner from '$lib/components/Spinner.svelte';
-	import { CHART_CARD, NARROW_CHART_WIDTH, NARROW_LEGEND_LABELS } from '$lib/charts';
+	import { CHART_CARD, NARROW_CHART_WIDTH, NARROW_LEGEND_LABELS, onModeChange } from '$lib/charts';
 	import { partLabel, statusColor, statusLabel, type StatusSeries, type SystemKind } from '$lib/gira-system';
 
 	Chart.register(TimeScale, LinearScale, BarElement, LineElement, PointElement, Filler, Tooltip, Legend);
@@ -43,7 +43,7 @@
 		if (chartCanvas && !loading && hasData) createOrUpdateChart();
 	});
 
-	mode.subscribe(() => createOrUpdateChart());
+	onModeChange(createOrUpdateChart);
 
 	function formatCount(value: number) {
 		return value.toLocaleString('pt-PT', { maximumFractionDigits: value < 10 ? 1 : 0 });

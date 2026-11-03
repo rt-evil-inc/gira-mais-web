@@ -4,7 +4,7 @@
 	import { Chart, type ChartDataset } from 'chart.js/auto';
 	import { TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, type ChartTypeRegistry } from 'chart.js';
 	import 'chartjs-adapter-date-fns';
-	import { mode } from 'mode-watcher';
+	import { onModeChange } from '$lib/charts';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import annotationPlugin from 'chartjs-plugin-annotation';
 
@@ -31,7 +31,7 @@
 		}
 	});
 
-	mode.subscribe(createOrUpdateChart);
+	onModeChange(createOrUpdateChart);
 
 	async function fetchReleases() {
 		try {

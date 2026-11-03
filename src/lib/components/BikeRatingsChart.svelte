@@ -8,10 +8,9 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, type ChartTypeRegistry } from 'chart.js';
 	import 'chartjs-adapter-date-fns';
-	import { mode } from 'mode-watcher';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import RatingFace from '$lib/components/RatingFace.svelte';
-	import { CHART_CARD, NARROW_CHART_WIDTH } from '$lib/charts';
+	import { CHART_CARD, NARROW_CHART_WIDTH, onModeChange } from '$lib/charts';
 
 	Chart.register(TimeScale, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
@@ -51,7 +50,7 @@
 		}
 	});
 
-	mode.subscribe(createOrUpdateChart);
+	onModeChange(createOrUpdateChart);
 
 	async function fetchChartData() {
 		if (!interval?.start || !interval?.end || !groupBy) return;
